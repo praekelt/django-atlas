@@ -1,0 +1,11 @@
+[
+    {
+        "pk": null,
+        "model": "category.category",
+        "fields": {
+            "title": "Locations",
+            "slug": "locations",
+            "parent": null
+        }
+    }
+]
