@@ -27,6 +27,8 @@ for country in countries:
     fields["name"] = name
     code = fields["country_code"]
     fields["border"] = code_geom[code]["geom"] if code in code_geom else None
+    if fields["border"] is not None and "MULTIPOLYGON" not in fields["border"]:
+        fields["border"] = "MULTIPOLYGON (%s)" % fields["border"][8:]
     if code in code_geom:
         code_geom[code]["pk"] = pk
     else:
@@ -37,28 +39,41 @@ for country in countries:
 
 city_file = open(os.path.join(base, "datasets/MaxMind Cities/worldcitiespop.txt"))
 pk = 1
+city_groups = []
 cities = []
+count = 0
 for line in city_file:
     els = line.split(",")
     if els[0] != 'Country':
         code = els[0].upper()
-        city = els[1]
+        city = els[2].decode("utf-8", "replace")
         lat = els[5]
-        lon = els[6]
-        cities.append({
+        lon = els[6].rstrip()
+        city = {
             "pk": pk,
             "model": "locations.city",
             "fields": {
                 "name": city,
-                "coordinates": "POINT (%s %s)" % (lat, lon),
                 "country": code_geom[code]["pk"]
             }
-        })
+        }
+        if len(lat) > 0 and len(lon) > 0:
+            city['fields']['coordinates'] = "POINT(%s %s)" % (lon, lat)
+        cities.append(city)
         pk += 1
+        count += 1
+        if count > 100000:
+            count = 0
+            city_groups.append(cities)
+            cities = []
     
 city_file.close()
 f = open(os.path.join(base, "fixtures/countries.json"), "w")
-output = json.dumps(countries + cities)
-output.encode("utf-8")
-f.write(output)
+f.write(json.dumps(countries))
 f.close()
+count = 1
+for cities in city_groups:
+    f = open(os.path.join(base, "fixtures/cities_%d.json" % count), "w")
+    f.write(json.dumps(cities))
+    f.close()
+    count += 1

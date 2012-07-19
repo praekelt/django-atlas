@@ -8,6 +8,9 @@ The following were used for development/testing:
 2. PostgreSQL 9.1
 3. PostGIS 1.5.2
 
+You might need to apply a PostGIS patch to Django that can be found here: https://code.djangoproject.com/ticket/16778. If you get a database encoding error when loading
+initial data, your version of Django has not been patched.
+
 Add the following to your INSTALLED_APPS:
 1. django.contrib.gis
 2. django.contrib.admin

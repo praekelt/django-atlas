@@ -15,6 +15,8 @@ class Country(models.Model):
         db_index=True,
     )
     border = models.MultiPolygonField(
+        srid=4326,
+        geography=True,
         null=True,
         blank=True
     )
@@ -30,8 +32,9 @@ class Country(models.Model):
 class City(models.Model):
     objects = models.GeoManager()
     
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=128)
     coordinates = models.PointField(
+        srid=4326,
         geography=True,
         null=True,
         blank=True
@@ -52,6 +55,7 @@ class Location(models.Model):
     name = models.CharField(max_length=128)
     # geography is True because we need to deal with global coordinates
     coordinates = models.PointField(
+        srid=4326,
         geography=True,
         null=True,
         blank=True
