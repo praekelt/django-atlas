@@ -62,10 +62,11 @@ for line in city_file:
         cities.append(city)
         pk += 1
         count += 1
-        if count > 100000:
+        if count >= 100000:
             count = 0
             city_groups.append(cities)
             cities = []
+city_groups.append(cities)
     
 city_file.close()
 f = open(os.path.join(base, "fixtures/countries.json"), "w")
