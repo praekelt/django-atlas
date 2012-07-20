@@ -37,7 +37,6 @@ class Region(models.Model):
     # uses fips10-4 2-digit region codes
     code = models.CharField(
         max_length=2,
-        unique=True,
         db_index=True
     )
     border = models.MultiPolygonField(
@@ -50,6 +49,7 @@ class Region(models.Model):
     
     class Meta:
         ordering = ('name',)
+        unique_together = ('country', 'code',)
 
     def __unicode__(self):
         return "%s (%s)" % (self.name, self.country.country_code)
