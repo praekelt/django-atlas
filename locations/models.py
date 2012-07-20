@@ -32,7 +32,10 @@ class Country(models.Model):
 class City(models.Model):
     objects = models.GeoManager()
     
-    name = models.CharField(max_length=128)
+    name = models.CharField(
+        max_length=128,
+        db_index=True
+    )
     coordinates = models.PointField(
         srid=4326,
         geography=True,
@@ -46,13 +49,16 @@ class City(models.Model):
         ordering = ('name',)
     
     def __unicode__(self):
-        return self.name
+        return "%s (%s)" % (self.name, self.country.country_code)
 
 
 class Location(models.Model):
     objects = models.GeoManager()
     
-    name = models.CharField(max_length=128)
+    name = models.CharField(
+        max_length=128,
+        db_index=True
+    )
     # geography is True because we need to deal with global coordinates
     coordinates = models.PointField(
         srid=4326,
@@ -62,11 +68,11 @@ class Location(models.Model):
     )
     country = models.ForeignKey(
         Country,
-        db_index=True
     )
     city = models.ForeignKey(
         City,
-        db_index=True
+        null=True,
+        blank=True
     )
     description = models.TextField(
         max_length=1024,
