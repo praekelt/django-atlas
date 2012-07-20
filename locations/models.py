@@ -14,6 +14,7 @@ class Country(models.Model):
         unique=True,
         db_index=True,
     )
+    # geography is True because we need to deal with global coordinates
     border = models.MultiPolygonField(
         srid=4326,
         geography=True,
@@ -29,6 +30,31 @@ class Country(models.Model):
         return self.name
         
 
+class Region(models.Model):
+    objects = models.GeoManager()
+    
+    name = models.CharField(max_length=128)
+    # uses fips10-4 2-digit region codes
+    code = models.CharField(
+        max_length=2,
+        unique=True,
+        db_index=True
+    )
+    border = models.MultiPolygonField(
+        srid=4326,
+        geography=True,
+        null=True,
+        blank=True
+    )
+    country = models.ForeignKey(Country)
+    
+    class Meta:
+        ordering = ('name',)
+
+    def __unicode__(self):
+        return "%s (%s)" % (self.name, self.country.country_code)
+
+
 class City(models.Model):
     objects = models.GeoManager()
     
@@ -42,6 +68,11 @@ class City(models.Model):
         null=True,
         blank=True
     )
+    region = models.ForeignKey(
+        Region,
+        null=True,
+        blank=True
+    )
     country = models.ForeignKey(Country)
     
     class Meta:
@@ -49,6 +80,8 @@ class City(models.Model):
         ordering = ('name',)
     
     def __unicode__(self):
+        if self.region is not None:
+            return "%s - %s (%s)" % (self.name, self.region.name, self.country.country_code)
         return "%s (%s)" % (self.name, self.country.country_code)
 
 
@@ -59,16 +92,13 @@ class Location(models.Model):
         max_length=128,
         db_index=True
     )
-    # geography is True because we need to deal with global coordinates
     coordinates = models.PointField(
         srid=4326,
         geography=True,
         null=True,
         blank=True
     )
-    country = models.ForeignKey(
-        Country,
-    )
+    country = models.ForeignKey(Country)
     city = models.ForeignKey(
         City,
         null=True,
@@ -91,7 +121,9 @@ class Location(models.Model):
     )
     
     def __unicode__(self):
-        return self.name
+        if self.city is not None:
+            return "%s - %s (%s)" % (self.name, self.city.name, self.country.name)
+        return "%s (%s)" % (self.name, self.country.name)
 
 
 # must override the default manager with GeoManager to allow for queries on related objects
