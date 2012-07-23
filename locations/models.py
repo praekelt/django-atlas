@@ -4,6 +4,8 @@ from photologue.models import Photo
 
 from category.models import Category
 
+from locations.fields import CoordinateField
+
 
 class Country(models.Model):
     objects = models.GeoManager()
@@ -62,7 +64,7 @@ class City(models.Model):
         max_length=128,
         db_index=True
     )
-    coordinates = models.PointField(
+    coordinates = CoordinateField(
         srid=4326,
         geography=True,
         null=True,
@@ -92,7 +94,7 @@ class Location(models.Model):
         max_length=128,
         db_index=True
     )
-    coordinates = models.PointField(
+    coordinates = CoordinateField(
         srid=4326,
         geography=True,
         null=True,
@@ -119,7 +121,7 @@ class Location(models.Model):
         null=True,
         blank=True
     )
-    
+
     def __unicode__(self):
         if self.city is not None:
             return "%s - %s (%s)" % (self.name, self.city.name, self.country.name)
