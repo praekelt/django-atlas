@@ -29,3 +29,5 @@ Follow those instructions and create a spatial database. Then add it to the DATA
             'PORT': '',
         }
     }
+
+You can also add a GOOGLE_MAPS_API_KEY = 'XXX...' setting. This will enable the LonLatWidget to use Google Maps for selecting coordinates.

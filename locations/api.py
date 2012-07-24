@@ -13,6 +13,7 @@ class CountryResource(ModelResource):
         allowed_methods = ["get"]
         filtering = {
             'country_code': ('exact', ),
+            'id': ('exact', )
         }
 
 
@@ -24,7 +25,7 @@ class CityResource(ModelResource):
         resource_name = "city"
         allowed_methods = ["get"]
         filtering = {
-            'country': ALL_WITH_RELATIONS,
+            'id': ('exact', )
         }
         excludes = ['country']
         max_limit = None
@@ -37,3 +38,11 @@ class LocationResource(ModelResource):
         queryset = Location.objects.all()
         resource_name = "location"
         allowed_methods = ["get"]
+        filtering = {
+            'country': ALL_WITH_RELATIONS,
+            'city': ALL_WITH_RELATIONS,
+            'coordinates': ('distance_lte', ),
+            'id': ('exact', )
+        }
+        max_limit = 20
+        
