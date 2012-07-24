@@ -12,8 +12,9 @@ class CountryResource(ModelResource):
     class Meta:
         queryset = Country.objects.all()
         resource_name = "country"
-        excludes = ['border']
-        allowed_methods = ["get"]
+        excludes = ('border', )
+        # not directly exposed via api
+        allowed_methods = []
         filtering = {
             'country_code': ('exact', ),
             'id': ('exact', )
@@ -26,7 +27,8 @@ class CityResource(ModelResource):
     class Meta:
         queryset = City.objects.all()
         resource_name = "city"
-        allowed_methods = ["get"]
+        # not directly exposed via api
+        allowed_methods = []
         filtering = {
             'id': ('exact', )
         }
@@ -47,6 +49,7 @@ class LocationResource(ModelResource):
             'id': ('exact', )
         }
         max_limit = 20
+        excludes = ('id', )
         default_format = "application/json"
 
     def build_filters(self, filters=None):
@@ -61,4 +64,27 @@ class LocationResource(ModelResource):
             orm_filters["coordinates__distance_lte"] = (point, dist)
 
         return orm_filters
-        
+    
+    def dehydrate_country(self, bundle):
+        if bundle.obj.country:
+            c = bundle.obj.country
+            return {'name': c.name, 'country_code': c.country_code}
+        return None
+    
+    def dehydrate_city(self, bundle):
+        if bundle.obj.city:
+            bundle.obj.city.name
+        return None
+    
+    def dehydrate_coordinates(self, bundle):
+        if bundle.obj.coordinates:
+            c = bundle.obj.coordinates
+            return {'longitude': c.x, 'latitude': c.y}
+        return None
+    
+    def dehydrate(self, bundle):
+        if bundle.obj.photo:
+            bundle.data['photo_uri'] = bundle.obj.photo.get_location_thumbnail_smart_url()
+        if bundle.obj.category:
+            bundle.data['category'] = bundle.obj.category.name
+        return bundle
