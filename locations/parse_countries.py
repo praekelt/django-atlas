@@ -58,7 +58,7 @@ for line in f:
             'name': name
         }
     })
-    r_code_pk[r_code] = pk
+    r_code_pk["%s%s" % (c_code, r_code)] = pk
     pk += 1
 f.close()
 f = open(os.path.join(base, "fixtures/regions.json"), "w")
@@ -89,7 +89,7 @@ for line in f:
         if len(lat) > 0 and len(lon) > 0:
             city['fields']['coordinates'] = "POINT(%s %s)" % (lon, lat)
         if els[3] in r_code_pk:
-            city["region"] = r_code_pk[els[3]]
+            city["region"] = r_code_pk["%s%s" % (code, els[3])]
         cities.append(city)
         pk += 1
         count += 1
