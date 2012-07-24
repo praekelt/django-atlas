@@ -1,6 +1,8 @@
 django-location
 ===============
 
+Geolocation models, data and tools using GeoDjango
+
 Requirements
 ------------
 
