@@ -1,3 +1,6 @@
+from django.contrib.gis.measure import D
+from django.contrib.gis.geos import fromstr
+
 from tastypie.resources import ModelResource, ALL, ALL_WITH_RELATIONS
 from tastypie import fields
 
@@ -27,12 +30,11 @@ class CityResource(ModelResource):
         filtering = {
             'id': ('exact', )
         }
-        excludes = ['country']
-        max_limit = None
-        default_format = "application/json"
 
 
 class LocationResource(ModelResource):
+    country = fields.ForeignKey(CountryResource, "country")
+    city = fields.ForeignKey(CityResource, "city", null=True)
     
     class Meta:
         queryset = Location.objects.all()
@@ -45,4 +47,18 @@ class LocationResource(ModelResource):
             'id': ('exact', )
         }
         max_limit = 20
+        default_format = "application/json"
+
+    def build_filters(self, filters=None):
+        if filters is None:
+            filters = {}
+        orm_filters = super(LocationResource, self).build_filters(filters)
+        
+        if 'location' in filters:
+            lon, lat = filters['location'].split(' ')
+            point = fromstr('POINT (%s %s)' % (lon, lat), srid=4326)
+            dist = float(filters['distance']) if 'distance' in filters else 5000
+            orm_filters["coordinates__distance_lte"] = (point, dist)
+
+        return orm_filters
         
