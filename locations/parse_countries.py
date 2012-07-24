@@ -66,7 +66,7 @@ f.write(json.dumps(regions))
 f.close()
 
 # get city data
-f = open(os.path.join(base, "datasets/MaxMind Cities/worldcitiespop.txt"))
+f = open(os.path.join(base, "datasets/MaxMind Cities/worldcitiespop.csv"))
 pk = 1
 city_groups = []
 cities = []
@@ -75,7 +75,7 @@ for line in f:
     els = line.split(",")
     if els[0] != 'Country':
         code = els[0].upper()
-        city = els[2].decode("utf-8", "replace")
+        city = els[2].decode('iso-8859-1').encode('utf8')
         lat = els[5]
         lon = els[6].rstrip()
         city = {

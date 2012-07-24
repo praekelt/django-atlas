@@ -2,7 +2,7 @@ from django.contrib import admin
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 
-from locations.models import Location
+from locations.models import Location, City, Country, Region
 
 
 class LocationAdminForm(forms.ModelForm):
@@ -30,3 +30,6 @@ class LocationAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Location, LocationAdmin)
+admin.site.register(City)
+admin.site.register(Country)
+admin.site.register(Region)
