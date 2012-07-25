@@ -35,7 +35,7 @@ class LonLatWidget(MultiWidget):
         id1 = re.search(pat, rendered_widgets[0]).group('label')
         id2 = re.search(pat, rendered_widgets[1]).group('label')
         map_code = u''
-        map_key = getattr(settings, 'GOOGLE_MAPS_API_KEY', None)
+        map_key = settings.DJANGO_LOCATIONS.get('google_maps_api_key', None)
         if map_key:
             map_code = u'''<script type="text/javascript">
                                 LonLatWidget = {
