@@ -4,7 +4,7 @@ setup(
     name='django-locations',
     version='0.1',
     description='Geolocation models, data and tools using GeoDjango',
-    long_description = open('README.rst', 'r').read() + open('AUTHORS.rst', 'r').read()
+    long_description = open('README.rst', 'r').read() + open('AUTHORS.rst', 'r').read(),
     author='Praekelt Foundation',
     author_email='dev@praekelt.com',
     license='BSD',
