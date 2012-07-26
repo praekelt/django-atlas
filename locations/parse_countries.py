@@ -1,10 +1,12 @@
 import os
 import simplejson as json
+from StringIO import StringIO
 
 from django.contrib.gis.gdal import DataSource
 
 
 base = os.path.dirname(os.path.abspath(__file__))
+sql = StringIO()
 
 # extract geometry of each country
 ds = DataSource(os.path.join(base, "datasets/TM_WORLD_BORDERS-0.3/TM_WORLD_BORDERS-0.3.shp"))
@@ -33,6 +35,7 @@ for country in countries:
         % (pk, fields['title'], fields['country_code'], fields['border'])
     pk += 1
 sql_country = sql_country[:-1] + ");"
+sql.write(sql_country)
 
 # get region data
 f = open(os.path.join(base, "datasets/MaxMind Cities/fips10-4.csv"))
@@ -49,10 +52,11 @@ for line in f:
     pk += 1
 f.close()
 sql_region = sql_region[:-1] + ");"
+sql.write(sql_region)
 
 # get city data
 f = open(os.path.join(base, "datasets/MaxMind Cities/worldcitiespop.csv"))
-sql_city = "INSERT INTO locations_city (id,name,coordinates,region_id,country_id) VALUES ("
+sql.write("INSERT INTO locations_city (id,name,coordinates,region_id,country_id) VALUES (")
 pk = 1
 for line in f:
     els = line.split(",")
@@ -61,23 +65,24 @@ for line in f:
         city = els[2].decode('iso-8859-1')
         lat = els[5]
         lon = els[6].rstrip()
-        sql_city += "(%d,'%s'," % (pk, city)
+        sql.write("(%d,'%s'," % (pk, city))
         if len(lat) > 0 and len(lon) > 0:
-            sql_city += "ST_GeomFromText('%s',4326)," % ("POINT(%s %s)" % (lon, lat))
+            sql.write("ST_GeomFromText('%s',4326)," % ("POINT(%s %s)" % (lon, lat)))
         else:
-            sql_city += "null,"
+            sql.write("null,")
         key = "%s%s" % (code, els[3])
         if key in r_code_pk:
-            sql_city += "%d," % r_code_pk[key]
+            sql.write("%d," % r_code_pk[key])
         else:
-            sql_city += "null,"
-        sql_city += "%d)," % (code_geom[code]["pk"], )
+            sql.write("null,")
+        sql.write("%d)" % (code_geom[code]["pk"], ))
+        if pk != 3173958:
+            sql.write(",")
         pk += 1
         print(pk)
 f.close()
-sql_city = sql_city[:-1] + ");"
+sql.write(");")
 
 f = open(os.path.join(base, "datasets/data.sql"), 'w')
-sql = sql_country + sql_region + sql_city
-f.write(sql.encode('utf8'))
+f.write(sql.getvalue().encode('utf8'))
 f.close()
