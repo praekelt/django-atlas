@@ -1,5 +1,7 @@
 from django.contrib.gis.db import models
 
+from south.modelsinspector import add_introspection_rules
+
 from photologue.models import Photo
 
 from category.models import Category
@@ -116,8 +118,8 @@ class Location(models.Model):
         null=True,
         blank=True
     )
-    category = models.ForeignKey(
-        Category,
+    address = models.TextField(
+        max_length=512,
         null=True,
         blank=True
     )
@@ -126,6 +128,10 @@ class Location(models.Model):
         if self.city is not None:
             return "%s - %s (%s)" % (self.name, self.city.name, self.country.name)
         return "%s (%s)" % (self.name, self.country.name)
+
+
+add_introspection_rules([], ["^locations\.fields\.CoordinateField"])
+add_introspection_rules([], ["^photologue\.models\.TagField"])
 
 
 # must override the default manager with GeoManager to allow for queries on related objects
