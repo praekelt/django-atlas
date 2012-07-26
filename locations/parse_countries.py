@@ -27,10 +27,10 @@ for country in countries:
     fields["border"] = code_geom[code]["geom"] if code in code_geom else None
     if fields["border"] is not None and "MULTIPOLYGON" not in fields["border"]:
         fields["border"] = "MULTIPOLYGON(%s)" % fields["border"][8:]
-        sql_country += "(%d,\"%s\",\"%s\",GeometryFromText('%s', 4326))," \
+        sql_country += "(%d,'%s','%s',GeometryFromText('%s', 4326))," \
         % (pk, fields['title'].replace("'", "\\'"), fields['country_code'], fields['border'])
     else:
-        sql_country += "(%d,\"%s\",\"%s\",null)," \
+        sql_country += "(%d,'%s','%s',null)," \
         % (pk, fields['title'].replace("'","\\'"), fields['country_code'])
     if code in code_geom:
         code_geom[code]["pk"] = pk
@@ -50,7 +50,7 @@ for line in f:
     r_code = line[3:5]
     name = line[6:].rstrip().strip('"')
     r_code_pk["%s%s" % (c_code, r_code)] = pk
-    sql_region += "(%d,\"%s\",\"%s\",%d)," \
+    sql_region += "(%d,'%s','%s',%d)," \
         % (pk, name.replace("'","\\'"), r_code, code_geom[c_code]["pk"])
     pk += 1
 f.close()
@@ -67,10 +67,10 @@ for line in f:
     if els[0] != 'Country':
         code = els[0].upper()
         city = els[2].decode('iso-8859-1').replace("'","\\'")
-	city.replace('"', '\\"')
+	city = city.replace('"', '\\"')
         lat = els[5]
         lon = els[6].rstrip()
-        sql.write("(%d,\"%s\"," % (pk, city))
+        sql.write("(%d,'%s'," % (pk, city))
         if len(lat) > 0 and len(lon) > 0:
             sql.write("GeometryFromText('%s',4326)," % ("POINT(%s %s)" % (lon, lat)))
         else:
