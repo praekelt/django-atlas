@@ -85,6 +85,4 @@ class LocationResource(ModelResource):
     def dehydrate(self, bundle):
         if bundle.obj.photo:
             bundle.data['photo_uri'] = bundle.obj.photo.get_location_thumbnail_smart_url()
-        if bundle.obj.category:
-            bundle.data['category'] = bundle.obj.category.name
         return bundle
