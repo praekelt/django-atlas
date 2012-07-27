@@ -10,6 +10,10 @@ setup(
     license='BSD',
     url='http://github.com/Rizziepit/django-locations',
     packages = find_packages(),
+    dependency_links = [
+        'http://github.com/praekelt/django-photologue/tarball/2.6.praekelt#egg=django-photologue-2.6.praekelt',
+        'http://github.com/praekelt/django-photologue/tarball/2.7.praekelt#egg=django-photologue-2.7.praekelt',
+    ],
     install_requires = [
         'django-tastypie',
         'django-photologue',
