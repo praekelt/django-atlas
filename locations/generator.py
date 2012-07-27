@@ -3,6 +3,11 @@ import math
 
 from locations.models import Country, Region, City, Location
 
+
+'''
+Generate locations in and around the selected cities, using the area of Cape Town as a guide.
+The probability of locations is higher towards the center of the city, tapering off further away.
+'''
 def generate():
     # select Cape Town, Stellenbosch, Worcester and Johannesburg
     country_id = Country.objects.get(country_code='ZA').id
@@ -17,10 +22,6 @@ def generate():
     # ellipse equation - t ranges from 0 to 2PI
     x = lambda t, a: a * math.cos(t)
     y = lambda t, b: b * math.sin(t)
-    '''
-    Generate locations in and around the selected locations, using the area of Cape Town as a guide.
-    The probability of locations is higher towards the center of the city, tapering off further away.
-    '''
     objects = []
     for city in cities:
         center_x = city[2].x
