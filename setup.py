@@ -1,14 +1,14 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='django-locations',
+    name='django-atlas',
     version='0.1',
     description='Geolocation models, data and tools using GeoDjango',
     long_description = open('README.rst', 'r').read() + open('AUTHORS.rst', 'r').read(),
     author='Praekelt Foundation',
     author_email='dev@praekelt.com',
     license='BSD',
-    url='http://github.com/Rizziepit/django-locations',
+    url='http://github.com/Rizziepit/django-atlas',
     packages = find_packages(),
     dependency_links = [
         'http://github.com/praekelt/django-photologue/tarball/2.6.praekelt#egg=django-photologue-2.6.praekelt',

@@ -1,4 +1,4 @@
-django-location
+django-atlas
 ===============
 
 Geolocation models, data and tools using GeoDjango
@@ -22,7 +22,7 @@ Add the following to your INSTALLED_APPS:
 
 1. django.contrib.gis
 2. django.contrib.admin
-3. locations
+3. atlas
 4. photologue
 5. category
 6. tastypie

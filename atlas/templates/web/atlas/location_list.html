@@ -33,7 +33,7 @@
 
                 requestLocations: function() {
                     $.ajax({
-                        url: "/locations/api/v1/location/",
+                        url: "/atlas/api/v1/location/",
                         dataType: 'json',
                         data: {format: 'json', location: '18.4647774696350098 -33.9770507001982836'}
                     }).done(function (data) {locationLoader.initLocations(data);});

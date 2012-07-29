@@ -1,7 +1,7 @@
 import random
 import math
 
-from locations.models import Country, Region, City, Location
+from atlas.models import Country, Region, City, Location
 
 
 '''
@@ -32,11 +32,11 @@ def generate():
             x_new = center_x + x(t, fraction * x_max)
             y_new = center_y + y(t, fraction * y_max)
             objects.append({
-                "model": "locations.Location",
+                "model": "atlas.Location",
                 "fields": {
                     "name": ("%s_%d" % (city[1], i)).encode("ascii"),
-                    "country": {"model": "locations.Country", "fields": {"id": int(country_id)}},
-                    "city": {"model": "locations.City", "fields": {"id": int(city[0])}},
+                    "country": {"model": "atlas.Country", "fields": {"id": int(country_id)}},
+                    "city": {"model": "atlas.City", "fields": {"id": int(city[0])}},
                     "coordinates": "POINT(%f %f)" % (x_new, y_new),
                 },
             })       

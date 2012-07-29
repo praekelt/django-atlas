@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404
 from tastypie.resources import ModelResource, ALL, ALL_WITH_RELATIONS
 from tastypie import fields
 
-from locations.models import Country, City, Location
+from atlas.models import Country, City, Location
 
 
 class CountryResource(ModelResource):

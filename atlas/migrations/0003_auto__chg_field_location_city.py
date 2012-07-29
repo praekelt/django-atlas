@@ -10,45 +10,45 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
 
         # Changing field 'Location.city'
-        db.alter_column('locations_location', 'city_id', self.gf('django.db.models.fields.related.ForeignKey')(default=1, to=orm['locations.City']))
+        db.alter_column('atlas_location', 'city_id', self.gf('django.db.models.fields.related.ForeignKey')(default=1, to=orm['atlas.City']))
 
     def backwards(self, orm):
 
         # Changing field 'Location.city'
-        db.alter_column('locations_location', 'city_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['locations.City'], null=True))
+        db.alter_column('atlas_location', 'city_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['atlas.City'], null=True))
 
     models = {
-        'locations.city': {
+        'atlas.city': {
             'Meta': {'ordering': "('name',)", 'object_name': 'City'},
-            'coordinates': ('locations.fields.CoordinateField', [], {'blank': 'True', 'null': 'True', 'geography': 'True'}),
-            'country': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['locations.Country']"}),
+            'coordinates': ('atlas.fields.CoordinateField', [], {'blank': 'True', 'null': 'True', 'geography': 'True'}),
+            'country': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['atlas.Country']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '128', 'db_index': 'True'}),
-            'region': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['locations.Region']", 'null': 'True', 'blank': 'True'})
+            'region': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['atlas.Region']", 'null': 'True', 'blank': 'True'})
         },
-        'locations.country': {
+        'atlas.country': {
             'Meta': {'ordering': "('name',)", 'object_name': 'Country'},
             'border': ('django.contrib.gis.db.models.fields.MultiPolygonField', [], {'blank': 'True', 'null': 'True', 'geography': 'True'}),
             'country_code': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '2', 'db_index': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '50'})
         },
-        'locations.location': {
+        'atlas.location': {
             'Meta': {'object_name': 'Location'},
             'address': ('django.db.models.fields.TextField', [], {'max_length': '512', 'null': 'True', 'blank': 'True'}),
-            'city': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['locations.City']"}),
-            'coordinates': ('locations.fields.CoordinateField', [], {'blank': 'True', 'null': 'True', 'geography': 'True'}),
-            'country': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['locations.Country']"}),
+            'city': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['atlas.City']"}),
+            'coordinates': ('atlas.fields.CoordinateField', [], {'blank': 'True', 'null': 'True', 'geography': 'True'}),
+            'country': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['atlas.Country']"}),
             'description': ('django.db.models.fields.TextField', [], {'max_length': '1024', 'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '128', 'db_index': 'True'}),
             'photo': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['photologue.Photo']", 'null': 'True', 'blank': 'True'})
         },
-        'locations.region': {
+        'atlas.region': {
             'Meta': {'ordering': "('name',)", 'unique_together': "(('country', 'code'),)", 'object_name': 'Region'},
             'border': ('django.contrib.gis.db.models.fields.MultiPolygonField', [], {'blank': 'True', 'null': 'True', 'geography': 'True'}),
             'code': ('django.db.models.fields.CharField', [], {'max_length': '2', 'db_index': 'True'}),
-            'country': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['locations.Country']"}),
+            'country': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['atlas.Country']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '128'})
         },
@@ -84,4 +84,4 @@ class Migration(SchemaMigration):
         }
     }
 
-    complete_apps = ['locations']
+    complete_apps = ['atlas']

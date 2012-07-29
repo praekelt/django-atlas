@@ -6,7 +6,7 @@ from photologue.models import Photo
 
 from category.models import Category
 
-from locations.fields import CoordinateField
+from atlas.fields import CoordinateField
 
 
 class Country(models.Model):
@@ -127,7 +127,7 @@ class Location(models.Model):
         return "%s (%s)" % (self.name, self.country.name)
 
 
-add_introspection_rules([], ["^locations\.fields\.CoordinateField"])
+add_introspection_rules([], ["^atlas\.fields\.CoordinateField"])
 add_introspection_rules([], ["^photologue\.models\.TagField"])
 
 

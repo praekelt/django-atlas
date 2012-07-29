@@ -19,7 +19,7 @@ for feature in layer:
 f = open(os.path.join(base, "datasets/countries.json"))
 countries = json.loads(f.read())
 f.close()
-sql_country = "INSERT INTO locations_country (id,name,country_code,border) VALUES "
+sql_country = "INSERT INTO atlas_country (id,name,country_code,border) VALUES "
 pk = 1
 for country in countries:
     fields = country["fields"]
@@ -42,7 +42,7 @@ sql.write(sql_country)
 
 # get region data
 f = open(os.path.join(base, "datasets/MaxMind Cities/fips10-4.csv"))
-sql_region = "INSERT INTO locations_region (id,name,code,country_id) VALUES "
+sql_region = "INSERT INTO atlas_region (id,name,code,country_id) VALUES "
 pk = 1
 r_code_pk = {}
 for line in f:
@@ -59,7 +59,7 @@ sql.write(sql_region)
 
 # get city data
 f = open(os.path.join(base, "datasets/MaxMind Cities/worldcitiespop.csv"))
-sql.write("INSERT INTO locations_city (id,name,coordinates,region_id,country_id) VALUES ")
+sql.write("INSERT INTO atlas_city (id,name,coordinates,region_id,country_id) VALUES ")
 pk = 1
 counter = 0
 for line in f:
@@ -86,7 +86,7 @@ for line in f:
         else:
             sql.write(";")
             if pk != 3173958: 
-                sql.write("\nINSERT INTO locations_city (id,name,coordinates,region_id,country_id) VALUES ")
+                sql.write("\nINSERT INTO atlas_city (id,name,coordinates,region_id,country_id) VALUES ")
             counter = 0
         counter += 1
         pk += 1
