@@ -1,5 +1,9 @@
+import heapq
+
 from django.contrib.gis.measure import D
 from django.contrib.gis.geos import fromstr
+from django.conf import settings
+from django.shortcuts import get_object_or_404
 
 from tastypie.resources import ModelResource, ALL, ALL_WITH_RELATIONS
 from tastypie import fields
@@ -55,15 +59,64 @@ class LocationResource(ModelResource):
     def build_filters(self, filters=None):
         if filters is None:
             filters = {}
+        filters.pop('city', None)  # we don't want to exclude nearby cities
         orm_filters = super(LocationResource, self).build_filters(filters)
-        
-        if 'location' in filters:
-            lon, lat = filters['location'].split(' ')
-            point = fromstr('POINT (%s %s)' % (lon, lat), srid=4326)
-            dist = float(filters['distance']) if 'distance' in filters else 5000
-            orm_filters["coordinates__distance_lte"] = (point, dist)
 
         return orm_filters
+    
+    def obj_get_list(self, request=None, **kwargs):
+        if settings.DATABASES['default']['ENGINE'].rfind('mysql') == -1:
+            return super(LocationResource, self).obj_get_list(request, **kwargs)
+        # query that works on MySQL
+        else:
+            # do basic ORM filtering
+            qs = super(LocationResource, self).get_object_list(request)
+            city_dict = {}
+            loc_heap = []
+            point = None  # coordinates of the user
+            if 'city' in request.GET:  # or geolocate them using GeoIP
+                city = get_object_or_404(City, id=request.GET['city'])
+                region_id = city.region.id
+                if region_id is not None:
+                    city_dict = dict(City.objects.filter(region=region_id).values_list('id', 'coordinates'))
+                else:
+                    city_dict = dict(City.objects.get(id=request.GET['city']).values_list('id', 'coordinates'))
+                point = city.coordinates
+            if 'location' in request.GET:
+                lon, lat = request.GET['location'].split(' ')
+                point = fromstr('POINT (%s %s)' % (lon, lat), srid=4326)
+            if len(city_dict) > 0:
+                qs = qs.filter(city__id__in=city_dict.keys())
+            for loc in qs:
+                point2 = loc.coordinates
+                if point2 is None:
+                   point2 = city_dict.get(loc.city_id, None)
+                if point2 is not None:
+                    heapq.heappush(loc_heap, (point.distance(point2), loc))
+            qs = []
+            limit = request.GET.get('limit', 20)
+            offset = request.GET.get('limit', 0)
+            num_items = limit + offset if limit + offset <= len(loc_heap) else len(loc_heap)
+            if offset >= num_items:
+                return qs
+            else:
+                for i in range(0, num_items):
+                    qs.append(heapq.heappop(loc_heap)[1])
+                return qs[offset:]
+    
+    def get_object_list(self, request):
+        # do basic ORM filtering
+        qs = super(LocationResource, self).get_object_list(request)
+        # do advanced location filtering
+        point = None
+        if 'location' in request.GET:
+            lon, lat = request.GET['location'].split(' ')
+            point = fromstr('POINT (%s %s)' % (lon, lat), srid=4326)
+        elif 'city' in request.GET:
+            point = get_object_or_404(City, id=request.GET['city']).coordinates
+        if point is not None:  # or geolocate them using GeoIP
+            qs = qs.distance(point).order_by('distance')
+        return qs
     
     def dehydrate_country(self, bundle):
         if bundle.obj.country:
@@ -73,7 +126,7 @@ class LocationResource(ModelResource):
     
     def dehydrate_city(self, bundle):
         if bundle.obj.city:
-            bundle.obj.city.name
+           return bundle.obj.city.name
         return None
     
     def dehydrate_coordinates(self, bundle):

@@ -96,6 +96,7 @@ class Location(models.Model):
         max_length=128,
         db_index=True
     )
+    # necessary to do decent location filtering
     coordinates = CoordinateField(
         srid=4326,
         geography=True,
@@ -103,11 +104,7 @@ class Location(models.Model):
         blank=True
     )
     country = models.ForeignKey(Country)
-    city = models.ForeignKey(
-        City,
-        null=True,
-        blank=True
-    )
+    city = models.ForeignKey(City)
     description = models.TextField(
         max_length=1024,
         null=True,
