@@ -59,7 +59,9 @@ class Migration(SchemaMigration):
             
         # create MySQL tables without spatial indices so that it will work with InnoDB
         else:
-            sql = """SET FOREIGN_KEY_CHECKS=0;
+            if not db.dry_run:
+                sql = """
+                    SET FOREIGN_KEY_CHECKS=0;
                     CREATE TABLE `atlas_country` (`id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY, `name` varchar(50) NOT NULL, `country_code` varchar(2) NOT NULL UNIQUE, `border` MULTIPOLYGON NULL);
                     CREATE TABLE `atlas_region` (`id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY, `name` varchar(128) NOT NULL, `code` varchar(2) NOT NULL, `border` MULTIPOLYGON NULL, `country_id` integer NOT NULL);
                     ALTER TABLE `atlas_region` ADD CONSTRAINT `atlas_region_country_id_545200d9bb67aa36_uniq` UNIQUE (`country_id`, `code`);
@@ -81,9 +83,12 @@ class Migration(SchemaMigration):
                     ALTER TABLE `atlas_location` ADD CONSTRAINT `photo_id_refs_id_764ca670382ba838` FOREIGN KEY (`photo_id`) REFERENCES `photologue_photo` (`id`);
                     CREATE INDEX `atlas_location_7c6c8bb1` ON `atlas_location` (`photo_id`);
                     ALTER TABLE `atlas_location` ADD CONSTRAINT `category_id_refs_id_71ba6eba4d7f8101` FOREIGN KEY (`category_id`) REFERENCES `category_category` (`id`);
-                    CREATE INDEX `atlas_location_42dc49bc` ON `atlas_location` (`category_id`);"""
+                    CREATE INDEX `atlas_location_42dc49bc` ON `atlas_location` (`category_id`);
+                    SET FOREIGN_KEY_CHECKS=1;"""
 
-            db.execute(sql)
+                for s in sql.split(';'):
+                    if s:
+                        db.execute(s + ';')
 
             db.send_create_signal('atlas', ['Country'])
             db.send_create_signal('atlas', ['Region'])
