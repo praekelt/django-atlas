@@ -41,4 +41,8 @@ Follow those instructions and create a spatial database. Then add it to the DATA
         }
     }
 
-You can also add a GOOGLE_MAPS_API_KEY = 'XXX...' setting. This will enable the LonLatWidget to use Google Maps for selecting coordinates.
+You can also add a Google Maps API key setting (see below). This will enable the LonLatWidget to use Google Maps for selecting coordinates.
+::
+    DJANGO_ATLAS = {
+        'google_maps_api_key': 'XXX...',
+    }
