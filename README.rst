@@ -11,12 +11,14 @@ The following were used for development/testing:
 1. Django 1.3
 2. PostgreSQL 9.1
 3. PostGIS 1.5.2
-4. django-photologue 2.7 (fork maintained by Praekelt at https://github.com/praekelt/django-photologue)
-5. django-category 0.1 (at https://github.com/praekelt/django-category)
-6. django-tastypie 0.9.11
+4. SQLite 3.7.9
+5. libspatialite3
+6. django-photologue 2.7 (fork maintained by Praekelt at https://github.com/praekelt/django-photologue)
+7. django-category 0.1 (at https://github.com/praekelt/django-category)
+8. django-tastypie 0.9.11
 
 You might need to apply a PostGIS patch to Django that can be found here: https://code.djangoproject.com/ticket/16778. If you get a database encoding error when loading
-initial data, your version of Django has not been patched.
+initial data, your version of Django has not been patched. You can also use SQLite and MySQL with django-atlas, although MySQL is very lacking in terms of GIS. 
 
 Add the following to your INSTALLED_APPS:
 
