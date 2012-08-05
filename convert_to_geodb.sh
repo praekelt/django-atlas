@@ -39,7 +39,9 @@ if [ $DB_TYPE == 1 ]; then
     fi
 
     psql -d $DB -f $POSTGIS_SQL_PATH/$POSTGIS_SQL && \
-    psql -d $DB -f $POSTGIS_SQL_PATH/spatial_ref_sys.sql
+    psql -d $DB -f $POSTGIS_SQL_PATH/spatial_ref_sys.sql && \
+    psql -d $DB -c "GRANT ALL ON geometry_columns TO PUBLIC;" && \
+    psql -d $DB -c "GRANT ALL ON spatial_ref_sys TO PUBLIC;"
     
     echo "PostGIS SQL installed"
 fi
