@@ -90,6 +90,14 @@ class Migration(SchemaMigration):
                     if s:
                         db.execute(s + ';')
 
+            # add distance_sphere function (radius of earth = 6378100)
+            db.execute("CREATE FUNCTION `distance_sphere`
+                        (a POINT, b POINT)
+                        RETURNS double DETERMINISTIC
+                        RETURN 6378100 * 2 * ASIN(SQRT( POWER(SIN((y(a) - y(b)) *
+                        pi()/180 / 2), 2) +COS(y(a) * pi()/180) * COS(y(b) *
+                        pi()/180) * POWER(SIN((x(a) - x(b)) * pi()/180 / 2), 2)));")
+
             db.send_create_signal('atlas', ['Country'])
             db.send_create_signal('atlas', ['Region'])
             db.send_create_signal('atlas', ['City'])
