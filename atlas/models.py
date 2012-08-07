@@ -121,6 +121,11 @@ class Location(models.Model):
         blank=True
     )
 
+    @property
+    def get_google_map_url(self):
+        return "http://maps.google.com/maps?q=%f,%f&ll=%f,%f&z=13" \
+            % (self.coordinates.y, self.coordinates.x, self.coordinates.y, self.coordinates.x)
+
     def __unicode__(self):
         if self.city is not None:
             return "%s - %s (%s)" % (self.name, self.city.name, self.country.name)
