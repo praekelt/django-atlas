@@ -16,6 +16,7 @@ The following were used for development/testing:
 6. django-photologue 2.7 (fork maintained by Praekelt at https://github.com/praekelt/django-photologue)
 7. django-category 0.1 (at https://github.com/praekelt/django-category)
 8. django-tastypie 0.9.11
+9. libgeoip1 1.4.8
 
 You might need to apply a PostGIS patch to Django that can be found here: https://code.djangoproject.com/ticket/16778. If you get a database encoding error when loading
 initial data, your version of Django has not been patched. You can also use SQLite and MySQL with django-atlas, although MySQL is very lacking in terms of GIS. 
@@ -48,3 +49,7 @@ You can also add a Google Maps API key setting (see below). This will enable the
     DJANGO_ATLAS = {
         'google_maps_api_key': 'XXX...',
     }
+
+Datasets
+--------
+http://www.maxmind.com/download/geoip/database/
