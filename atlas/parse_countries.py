@@ -9,7 +9,7 @@ base = os.path.dirname(os.path.abspath(__file__))
 sql = StringIO()
 
 # extract geometry of each country
-ds = DataSource(os.path.join(base, "datasets/TM_WORLD_BORDERS-0.3/TM_WORLD_BORDERS-0.3.shp"))
+ds = DataSource(os.path.join(base, "datasets/TM/TM_WORLD_BORDERS-0.3.shp"))
 layer = ds[0]
 code_geom = {}
 for feature in layer:
@@ -28,10 +28,10 @@ for country in countries:
     if fields["border"] is not None and "MULTIPOLYGON" not in fields["border"]:
         fields["border"] = "MULTIPOLYGON(%s)" % fields["border"][8:]
         sql_country += "(%d,'%s','%s',GeometryFromText('%s', 4326))," \
-        % (pk, fields['title'].replace("'", "\\'"), fields['country_code'], fields['border'])
+        % (pk, fields['title'].replace("'", "''"), fields['country_code'], fields['border'])
     else:
         sql_country += "(%d,'%s','%s',null)," \
-        % (pk, fields['title'].replace("'","\\'"), fields['country_code'])
+        % (pk, fields['title'].replace("'","''"), fields['country_code'])
     if code in code_geom:
         code_geom[code]["pk"] = pk
     else:
@@ -41,24 +41,26 @@ sql_country = sql_country[:-1] + ";\n"
 sql.write(sql_country)
 
 # get region data
-f = open(os.path.join(base, "datasets/MaxMind Cities/fips10-4.csv"))
-sql_region = "INSERT INTO atlas_region (id,name,code,country_id) VALUES "
+region_files = ("datasets/MaxMind/fips10-4.csv", "datasets/MaxMind/us_regions.csv")
 pk = 1
 r_code_pk = {}
-for line in f:
-    c_code = line[0:2]
-    r_code = line[3:5]
-    name = line[6:].rstrip().strip('"')
-    r_code_pk["%s%s" % (c_code, r_code)] = pk
-    sql_region += "(%d,'%s','%s',%d)," \
-        % (pk, name.replace("'","\\'"), r_code, code_geom[c_code]["pk"])
-    pk += 1
-f.close()
-sql_region = sql_region[:-1] + ";\n"
-sql.write(sql_region)
+for f_name in region_files:
+    f = open(os.path.join(base, f_name))
+    sql_region = "INSERT INTO atlas_region (id,name,code,country_id) VALUES "
+    for line in f:
+        c_code = line[0:2]
+        r_code = line[3:5]
+        name = line[6:].rstrip().strip('"')
+        r_code_pk["%s%s" % (c_code, r_code)] = pk
+        sql_region += "(%d,'%s','%s',%d)," \
+            % (pk, name.replace("'","''"), r_code, code_geom[c_code]["pk"])
+        pk += 1
+    f.close()
+    sql_region = sql_region[:-1] + ";\n"
+    sql.write(sql_region)
 
 # get city data
-f = open(os.path.join(base, "datasets/MaxMind Cities/worldcitiespop.csv"))
+f = open(os.path.join(base, "datasets/MaxMind/worldcitiespop.csv"))
 sql.write("INSERT INTO atlas_city (id,name,coordinates,region_id,country_id) VALUES ")
 pk = 1
 counter = 0
@@ -66,7 +68,7 @@ for line in f:
     els = line.split(",")
     if els[0] != 'Country':
         code = els[0].upper()
-        city = els[2].decode('iso-8859-1').replace("'","\\'")
+        city = els[2].decode('iso-8859-1').replace("'","''")
 	city = city.replace('"', '\\"')
         lat = els[5]
         lon = els[6].rstrip()
