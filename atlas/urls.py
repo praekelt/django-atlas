@@ -12,12 +12,6 @@ v1_api.register(LocationResource())'''
 
 
 urlpatterns = patterns('',
-    '''(r'^api/', include(v1_api.urls)),
-    url(
-        r'^$',
-        'atlas.views.location_list',
-        name='location-list'
-    ),'''
     url(
         r'^set-location/$',
         'atlas.views.set_location',

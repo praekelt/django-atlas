@@ -1,31 +1,31 @@
 # -*- coding: utf-8 -*-
 import datetime
 from south.db import db
-from south.v2 import SchemaMigration
+from south.v2 import DataMigration
 from django.db import models
-from django.conf import settings
+from django.db.models.query import Q
 
-
-class Migration(SchemaMigration):
+class Migration(DataMigration):
 
     def forwards(self, orm):
-        db_engine = settings.DATABASES['default']['ENGINE']
-        # add distance_sphere function (radius of earth = 6378100)
-        if db_engine.rfind('mysql') > -1:
-            if not db.dry_run:
-                db.execute("""CREATE FUNCTION `distance_sphere`
-                            (a POINT, b POINT)
-                            RETURNS double DETERMINISTIC
-                            RETURN 6378100 * 2 * ASIN(SQRT( POWER(SIN((y(a) - y(b)) *
-                            pi()/180 / 2), 2) +COS(y(a) * pi()/180) * COS(y(b) *
-                            pi()/180) * POWER(SIN((x(a) - x(b)) * pi()/180 / 2), 2)));""")
+        # remove duplicate fips code US and CA regions (MaxMind data doesn't use fips codes for these)
+        us_ca_regions = orm['atlas.Region'].objects.filter(country__country_code__in=('US','CA')).order_by('name', 'code')
+        ids_to_delete = []
+        i = 0
+        while i < len(us_ca_regions) - 1:
+            if us_ca_regions[i+1].name.find(us_ca_regions[i].name) == 0:
+                if us_ca_regions[i].code.isdigit():
+                    ids_to_delete.append(us_ca_regions[i].id)
+                elif us_ca_regions[i+1].code.isdigit():
+                    ids_to_delete.append(us_ca_regions[i+1].id)
+                i += 2
+            else:
+                i += 1
+
+        orm['atlas.Region'].objects.filter(id__in=ids_to_delete).delete()
 
     def backwards(self, orm):
-        db_engine = settings.DATABASES['default']['ENGINE']
-        # remove distance_sphere function
-        if db_engine.rfind('mysql') > -1:
-            if not db.dry_run:
-                db.execute("DROP FUNCTION `distance_sphere`;")
+        raise RuntimeError("Cannot reverse this migration.")
 
     models = {
         'atlas.city': {
@@ -39,6 +39,7 @@ class Migration(SchemaMigration):
         'atlas.country': {
             'Meta': {'ordering': "('name',)", 'object_name': 'Country'},
             'border': ('django.contrib.gis.db.models.fields.MultiPolygonField', [], {'blank': 'True', 'null': 'True', 'geography': 'True'}),
+            'coordinates': ('atlas.fields.CoordinateField', [], {'blank': 'True', 'null': 'True', 'geography': 'True'}),
             'country_code': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '2', 'db_index': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '50'})
@@ -58,6 +59,7 @@ class Migration(SchemaMigration):
             'Meta': {'ordering': "('name',)", 'unique_together': "(('country', 'code'),)", 'object_name': 'Region'},
             'border': ('django.contrib.gis.db.models.fields.MultiPolygonField', [], {'blank': 'True', 'null': 'True', 'geography': 'True'}),
             'code': ('django.db.models.fields.CharField', [], {'max_length': '2', 'db_index': 'True'}),
+            'coordinates': ('atlas.fields.CoordinateField', [], {'blank': 'True', 'null': 'True', 'geography': 'True'}),
             'country': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['atlas.Country']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '128'})
@@ -95,3 +97,4 @@ class Migration(SchemaMigration):
     }
 
     complete_apps = ['atlas']
+    symmetrical = True

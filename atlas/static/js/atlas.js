@@ -14,7 +14,6 @@ var atlas = {
     setLocation: function (location) {
         settings = {
             url: "set-location",
-            success: function (data, textStatus, jqXHR) {atlas.onLocationSet(data);},
             error: function (jqXHR, textStatus, error) {
                 if (textStatus == 'timeout') {
                     this.retries++;
@@ -22,20 +21,22 @@ var atlas = {
                         $.ajax(this);
                         return;
                     }
-                    console.log("The max retry limit has been reached and the client location could not be set.");
+                    console.log("The max retry limit has been reached.");
                     return;
                 }
                 else {
-                    console.log("An error has occurred and the client location could not be set.");
+                    console.log("Some error occurred.");
                 }
             },
             retries: 0,
             max_retries: 5,
         };
         if (location) {
-            settings.data = {lon: location.coords.longitude, lat: location.coords.latitude};
+            document.cookie = "atlas_id=" + location.coords.longitude + "," + location.coords.latitude + "; path=/";
             console.log("The client has been located.");
-            console.log(location);
+        }
+        else {
+            document.cookie = "atlas_id=no-location; path=/";
         }
         $.ajax(settings);
     },
@@ -57,10 +58,6 @@ var atlas = {
                 break;
         }
         atlas.setLocation();
-    },
-    
-    onLocationSet: function(data) {
-        document.cookie = "atlas_id=" + data + "; path=/";
     },
     
     isLocationSet: function() {
