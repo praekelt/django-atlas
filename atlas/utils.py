@@ -15,12 +15,13 @@ def get_city(ip=None, position=None):
     city = None
     if ip:
         city_dict = GeoIP().city(ip)
-        qs = City.objects.filter(name=city_dict['city'],
-                country__country_code=city_dict['country_code'])
-        if 'region' in city_dict:
-            qs = qs.filter(region__code=city_dict['region'])
-        if qs:
-            city = qs[0]
+        if city_dict:
+            qs = City.objects.filter(name=city_dict['city'],
+                    country__country_code=city_dict['country_code'])
+            if 'region' in city_dict:
+                qs = qs.filter(region__code=city_dict['region'])
+            if qs:
+                city = qs[0]
     
     if not city and position:
         if DB_ENGINE.rfind('mysql') >= 0:

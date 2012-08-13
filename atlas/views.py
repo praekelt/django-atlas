@@ -1,24 +1,50 @@
-from django.http import HttpResponse, HttpResponseBadRequest
+from functools import wraps
+
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
 from django.utils.translation import ugettext as _
 from django.contrib.gis.geos import fromstr
-from django.contrib.gis.geoip import GeoIP
+from django.core.urlresolvers import reverse
 
 from atlas.models import Location
+from atlas.utils import get_city
 
 
+def location_required(override_old=False):
+    def decorator(func):
+        def inner_decorator(request, *args, **kwargs):
+            if 'location' in request.session and not override_old:
+                return func(request, *args, **kwargs)
+            else:
+                ip = request.META['REMOTE_ADDR'] if 'REMOTE_ADDR' \
+                    in request.META else None
+                location = request.COOKIES['atlas_id'] if 'atlas_id' \
+                    in request.COOKIES else None
+
+                city = None
+                position = location
+                if ip:
+                    city = get_city(ip=ip)
+                if location != 'no-location':
+                    lon, lat = location.split(',')
+                    position = fromstr("POINT (%s %s)" % (lon, lat), srid=4326)
+                
+                if city:
+                    request.session['location'] = {'city': city, 'position': position}
+                else:
+                    return HttpResponseRedirect(reverse('select-location'))
+
+        return wraps(func)(inner_decorator)
+
+    return decorator
+
+
+@location_required(override_old=True)
 def set_location(request):
-    if 'atlas_id' in request.COOKIES:
-        val = request.COOKIES['atlas_id']
-        #if 
-        if val == 'no-location':
-            # IP geolocate the client
-            pass
-        else:
-            lon, lat = val.split(',')
-            point = fromstr("POINT (%s %s)" % (lon, lat), srid=4326)
-            request.session['location'] = None
-            
-    return HttpResponseBadRequest()
+    return HttpResponse(str(request.session['location']['city'])
+
+
+def select_location(request):
+    return HttpResponse("A pretty template coming soon...")
     

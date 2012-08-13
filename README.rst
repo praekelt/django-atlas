@@ -52,4 +52,5 @@ You can also add a Google Maps API key setting (see below). This will enable the
 
 Datasets
 --------
-http://www.maxmind.com/download/geoip/database/
+
+MaxMind's IP geolocation datasets are available at http://www.maxmind.com/download/geoip/database/.

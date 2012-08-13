@@ -17,4 +17,8 @@ urlpatterns = patterns('',
         'atlas.views.set_location',
         name='set-location'
     ),
+    url(r'^select-location/$',
+        'atlas.views.select_location',
+        name='select-location',
+    ),
 )
