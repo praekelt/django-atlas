@@ -147,8 +147,3 @@ class Location(models.Model):
 
 add_introspection_rules([], ["^atlas\.fields\.CoordinateField"])
 add_introspection_rules([], ["^photologue\.models\.TagField"])
-
-
-# must override the default manager with GeoManager to allow for queries on related objects
-#Category.add_to_class('objects', models.GeoManager())
-#ImageModel.add_to_class('objects', models.GeoManager())
