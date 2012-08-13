@@ -47,7 +47,7 @@ def location_required(override_old=False):
 
 @location_required(override_old=True)
 def set_location(request):
-    return HttpResponse(str(request.session['location']['city'])
+    return HttpResponse(str(request.session['location']['city']))
 
 
 def select_location(request):
