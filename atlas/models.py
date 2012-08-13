@@ -18,15 +18,15 @@ class Country(models.Model):
         unique=True,
         db_index=True,
     )
-    # geography is True because we need to deal with global coordinates
-    border = models.MultiPolygonField(
+    # the average longitude/latitude for the country
+    coordinates = CoordinateField(
         srid=4326,
         geography=True,
         null=True,
         blank=True
     )
-    # the average longitude/latitude for the country
-    coordinates = CoordinateField(
+    # geography is True because we need to deal with global coordinates
+    border = models.MultiPolygonField(
         srid=4326,
         geography=True,
         null=True,
@@ -49,14 +49,14 @@ class Region(models.Model):
         max_length=2,
         db_index=True
     )
-    border = models.MultiPolygonField(
+    # the average longitude/latitude for the region
+    coordinates = CoordinateField(
         srid=4326,
         geography=True,
         null=True,
         blank=True
     )
-    # the average longitude/latitude for the region
-    coordinates = CoordinateField(
+    border = models.MultiPolygonField(
         srid=4326,
         geography=True,
         null=True,

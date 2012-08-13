@@ -15,11 +15,21 @@ code_geom = {}
 for feature in layer:
     code_geom[feature.get("ISO2")] = {"geom": feature.geom.wkt}
 
+# get centroid of each country
+f = open(os.path.join(base, "datasets/MaxMind/country_coords.csv"))
+for line in f:
+    vals = line.split(",")
+    if vals[0] in code_geom:
+        code_geom[vals[0]]['centroid'] = 'POINT (%s %s)' % (vals[2].strip(), vals[1])
+    else:
+        code_geom[vals[0]] = {"centroid": 'POINT (%s %s)' % (vals[2].strip(), vals[1])}
+f.close()
+
 # get full country dataset
 f = open(os.path.join(base, "datasets/countries.json"))
 countries = json.loads(f.read())
 f.close()
-sql_country = "INSERT INTO atlas_country (id,name,country_code,border) VALUES "
+sql_country = "INSERT INTO atlas_country (id,name,country_code,border,coordinates) VALUES "
 pk = 1
 for country in countries:
     fields = country["fields"]
@@ -27,11 +37,15 @@ for country in countries:
     fields["border"] = code_geom[code]["geom"] if code in code_geom else None
     if fields["border"] is not None and "MULTIPOLYGON" not in fields["border"]:
         fields["border"] = "MULTIPOLYGON(%s)" % fields["border"][8:]
-        sql_country += "(%d,'%s','%s',GeometryFromText('%s', 4326))," \
-        % (pk, fields['title'].replace("'", "''"), fields['country_code'], fields['border'])
+        sql_country += "(%d,'%s','%s',GeometryFromText('%s', 4326),%s)," \
+        % (pk, fields['title'].replace("'", "''"), fields['country_code'], fields['border'], \
+            "GeometryFromText('%s', 4326)" % code_geom[code]['centroid'] if \
+            (code in code_geom and 'centroid' in code_geom[code]) else 'null')
     else:
-        sql_country += "(%d,'%s','%s',null)," \
-        % (pk, fields['title'].replace("'","''"), fields['country_code'])
+        sql_country += "(%d,'%s','%s',null,%s)," \
+        % (pk, fields['title'].replace("'","''"), fields['country_code'], \
+            "GeometryFromText('%s', 4326)" % code_geom[code]['centroid'] if \
+            (code in code_geom and 'centroid' in code_geom[code]) else 'null')
     if code in code_geom:
         code_geom[code]["pk"] = pk
     else:
@@ -41,20 +55,31 @@ sql_country = sql_country[:-1] + ";\n"
 sql.write(sql_country)
 
 # get region data
+r_code_centroid = {}
+f = open(os.path.join(base, "datasets/MaxMind/us_regions_coords.csv"))
+for line in f:
+    vals = line.split(",")
+    r_code_centroid["%s%s" % ('US', vals[0])] = 'POINT (%s %s)' % (vals[2].strip(), vals[1])
+f.close()
+
 region_files = ("datasets/MaxMind/fips10-4.csv", "datasets/MaxMind/us_regions.csv")
 pk = 1
 r_code_pk = {}
 for f_name in region_files:
     f = open(os.path.join(base, f_name))
-    sql_region = "INSERT INTO atlas_region (id,name,code,country_id) VALUES "
+    sql_region = "INSERT INTO atlas_region (id,name,code,country_id,coordinates) VALUES "
     for line in f:
         c_code = line[0:2]
-        r_code = line[3:5]
-        name = line[6:].rstrip().strip('"')
-        r_code_pk["%s%s" % (c_code, r_code)] = pk
-        sql_region += "(%d,'%s','%s',%d)," \
-            % (pk, name.replace("'","''"), r_code, code_geom[c_code]["pk"])
-        pk += 1
+        # use fips codes for everything except US states
+        if c_code != 'US' or (f_name.rfind('us_regions.csv') > -1 and c_code != 'CA'):
+            r_code = line[3:5]
+            name = line[6:].rstrip().strip('"')
+            key = "%s%s" % (c_code, r_code)
+            r_code_pk[key] = pk
+            sql_region += "(%d,'%s','%s',%d, %s)," \
+                % (pk, name.replace("'","''"), r_code, code_geom[c_code]["pk"], \
+                "GeometryFromText('%s', 4326)" % r_code_centroid[key] if key in r_code_centroid else 'null')
+            pk += 1
     f.close()
     sql_region = sql_region[:-1] + ";\n"
     sql.write(sql_region)
@@ -92,7 +117,7 @@ for line in f:
             counter = 0
         counter += 1
         pk += 1
-        print(pk)
+        print("%d / 3173958" % pk)
 f.close()
 
 f = open(os.path.join(base, "datasets/data.sql"), 'w')
