@@ -6,6 +6,7 @@ from django.template import RequestContext
 from django.utils.translation import ugettext as _
 from django.contrib.gis.geos import fromstr
 from django.core.urlresolvers import reverse
+from django.template import RequestContext
 
 from atlas.models import Location
 from atlas.utils import get_city
@@ -34,6 +35,8 @@ def location_required(override_old=False):
                 if location and location != 'no-location':
                     lon, lat = location.split(',')
                     position = fromstr("POINT (%s %s)" % (lon, lat), srid=4326)
+                    if not city:
+                        city = get_city(position=position)
                 
                 if city:
                     request.session['location'] = {'city': city, 'position': position}
@@ -51,5 +54,5 @@ def set_location(request):
 
 
 def select_location(request):
-    return HttpResponse("'Select location' template coming soon.")
+    return render_to_response("atlas/select_location.html", context_instance=RequestContext(request))
     

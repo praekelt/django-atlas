@@ -17,8 +17,7 @@ class CountryResource(ModelResource):
         queryset = Country.objects.all()
         resource_name = "country"
         excludes = ('border', )
-        # not directly exposed via api
-        allowed_methods = []
+        allowed_methods = ["get"]
         filtering = {
             'country_code': ('exact', ),
             'id': ('exact', )
@@ -31,10 +30,10 @@ class CityResource(ModelResource):
     class Meta:
         queryset = City.objects.all()
         resource_name = "city"
-        # not directly exposed via api
-        allowed_methods = []
+        allowed_methods = ["get"]
         filtering = {
-            'id': ('exact', )
+            'id': ('exact', ),
+            'country': ALL_WITH_RELATIONS,
         }
 
 
@@ -64,46 +63,6 @@ class LocationResource(ModelResource):
 
         return orm_filters
     
-    def obj_get_list(self, request=None, **kwargs):
-        if settings.DATABASES['default']['ENGINE'].rfind('mysql') == -1:
-            return super(LocationResource, self).obj_get_list(request, **kwargs)
-        # query that works on MySQL
-        else:
-            # do basic ORM filtering
-            qs = super(LocationResource, self).get_object_list(request)
-            city_dict = {}
-            loc_heap = []
-            point = None  # coordinates of the user
-            if 'city' in request.GET:  # or geolocate them using GeoIP
-                city = get_object_or_404(City, id=request.GET['city'])
-                region_id = city.region.id
-                if region_id is not None:
-                    city_dict = dict(City.objects.filter(region=region_id).values_list('id', 'coordinates'))
-                else:
-                    city_dict = dict(City.objects.get(id=request.GET['city']).values_list('id', 'coordinates'))
-                point = city.coordinates
-            if 'location' in request.GET:
-                lon, lat = request.GET['location'].split(' ')
-                point = fromstr('POINT (%s %s)' % (lon, lat), srid=4326)
-            if len(city_dict) > 0:
-                qs = qs.filter(city__id__in=city_dict.keys())
-            for loc in qs:
-                point2 = loc.coordinates
-                if point2 is None:
-                   point2 = city_dict.get(loc.city_id, None)
-                if point2 is not None:
-                    heapq.heappush(loc_heap, (point.distance(point2), loc))
-            qs = []
-            limit = request.GET.get('limit', 20)
-            offset = request.GET.get('limit', 0)
-            num_items = limit + offset if limit + offset <= len(loc_heap) else len(loc_heap)
-            if offset >= num_items:
-                return qs
-            else:
-                for i in range(0, num_items):
-                    qs.append(heapq.heappop(loc_heap)[1])
-                return qs[offset:]
-    
     def get_object_list(self, request):
         # do basic ORM filtering
         qs = super(LocationResource, self).get_object_list(request)
@@ -115,7 +74,12 @@ class LocationResource(ModelResource):
         elif 'city' in request.GET:
             point = get_object_or_404(City, id=request.GET['city']).coordinates
         if point is not None:  # or geolocate them using GeoIP
-            qs = qs.distance(point).order_by('distance')
+            if settings.DATABASES['default']['ENGINE'].rfind('mysql') == -1:
+                qs = qs.distance(point).order_by('distance')
+            else:
+                qs = qs.exclude(coordinates__isnull=True).extra(select={'distance': \
+                    'distance_sphere(`atlas_location`.`coordinates`, geomfromtext(\'%s\', %d))' \
+                    % (str(point), point.srid)}).order_by('distance')
         return qs
     
     def dehydrate_country(self, bundle):
