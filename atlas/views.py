@@ -31,7 +31,7 @@ def location_required(override_old=False):
                 position = location
                 if ip:
                     city = get_city(ip=ip)
-                if location != 'no-location':
+                if location and location != 'no-location':
                     lon, lat = location.split(',')
                     position = fromstr("POINT (%s %s)" % (lon, lat), srid=4326)
                 
@@ -51,5 +51,5 @@ def set_location(request):
 
 
 def select_location(request):
-    return HttpResponse("A pretty template coming soon...")
+    return HttpResponse("'Select location' template coming soon.")
     
