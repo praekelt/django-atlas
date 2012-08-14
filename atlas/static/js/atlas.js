@@ -13,7 +13,7 @@ var atlas = {
     // can call this with or without a location - the server will IP geolocate the client
     setLocation: function (location) {
         settings = {
-            url: "set-location",
+            url: "set-location/",
             error: function (jqXHR, textStatus, error) {
                 if (textStatus == 'timeout') {
                     this.retries++;
