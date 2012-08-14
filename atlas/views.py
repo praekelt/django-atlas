@@ -40,8 +40,9 @@ def location_required(override_old=False):
                 
                 if city:
                     request.session['location'] = {'city': city, 'position': position}
-                else:
-                    return HttpResponseRedirect(reverse('select-location'))
+                    return func(request, *args, **kwargs)
+
+                return HttpResponseRedirect(reverse('select-location'))
 
         return wraps(func)(inner_decorator)
 
