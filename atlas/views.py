@@ -33,7 +33,7 @@ def location_required(override_old=False):
                 if ip:
                     city = get_city(ip=ip)
                 if location and location != 'no-location':
-                    lon, lat = location.split(',')
+                    lon, lat = location.split('+')
                     position = fromstr("POINT (%s %s)" % (lon, lat), srid=4326)
                     if not city:
                         city = get_city(position=position)

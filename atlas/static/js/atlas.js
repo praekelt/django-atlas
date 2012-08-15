@@ -32,7 +32,7 @@ var atlas = {
             max_retries: 5,
         };
         if (location) {
-            document.cookie = "atlas_id=" + location.coords.longitude + "," + location.coords.latitude + "; path=/";
+            document.cookie = "atlas_id=" + location.coords.longitude + "+" + location.coords.latitude + "; path=/";
             console.log("The client has been located.");
         }
         else {
