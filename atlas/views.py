@@ -10,7 +10,7 @@ from django.template import RequestContext
 
 from atlas.models import Location
 from atlas.utils import get_city
-
+from atlas.forms import SelectLocationForm
 
 '''
 This decorator tries to geolocate the client and adds the location
@@ -27,16 +27,17 @@ def location_required(override_old=False):
                     in request.META else None
                 location = request.COOKIES['atlas_id'] if 'atlas_id' \
                     in request.COOKIES else None
-
                 city = None
-                position = location
-                if ip:
-                    city = get_city(ip=ip)
+                position = None
                 if location and location != 'no-location':
-                    lon, lat = location.split('+')
-                    position = fromstr("POINT (%s %s)" % (lon, lat), srid=4326)
-                    if not city:
-                        city = get_city(position=position)
+                    position = fromstr("POINT (%s %s)" % tuple(location.split('+')), srid=4326)
+                if ip:
+                    if position:
+                        city = get_city(ip=ip, position=position)
+                    else:
+                        city = get_city(ip=ip)
+                if not city and position:
+                    city = get_city(position=position)
                 
                 if city:
                     request.session['location'] = {'city': city, 'position': position}
@@ -55,5 +56,10 @@ def set_location(request):
 
 
 def select_location(request):
-    return render_to_response("atlas/select_location.html", context_instance=RequestContext(request))
+    if request.method == 'POST':
+        pass
+    else:
+        form = SelectLocationForm(request=request)
+        extra = {'form': form}
+        return render_to_response("atlas/select_location.html", extra, context_instance=RequestContext(request))
     
