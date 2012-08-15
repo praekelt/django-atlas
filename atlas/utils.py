@@ -71,7 +71,7 @@ def get_city(ip=None, position=None):
             qs = City.objects.filter(Q(region__in=closest_regions) | Q(country__in=closest_countries))
         
         # select cities within a minimum bounding rectangle of 100km radius
-        qs = qs.filter(coordinates__within=)
+        #qs = qs.filter(coordinates__within=)
         
         # order cities by their distance
         if DB_ENGINE.rfind('mysql') >= 0:
@@ -88,22 +88,20 @@ def get_city(ip=None, position=None):
     return city
 
 
-"""CREATE FUNCTION `distance_sphere`
-                            (a POINT, b POINT)
-                            RETURNS double DETERMINISTIC
-                            RETURN 6378100 * 2 * ASIN(SQRT( POWER(SIN((y(a) - y(b)) *
-                            pi()/180 / 2), 2) +COS(y(a) * pi()/180) * COS(y(b) *
-                            pi()/180) * POWER(SIN((x(a) - x(b)) * pi()/180 / 2), 2)));"""
 def get_mbr_for_radius(point, radius):
-    theta = (radius / RADIUS_EARTH) * (180 / math.pi)
-    norm_x = point.x + 180
-    norm_y = point.y + 90
-    min_lon = norm_x - theta
-    min_lon = 360 - min_lon - 180 if min_lon < 0 else min_lon - 180
-    max_lon = (norm_x + theta) % 360 - 180
-    min_lat = norm_x - theta
-    min_lat = 180 - min_lat - 90 if min_lat < 0 else min_lat - 90
-    max_lat = norm_x + theta
-    fromstr("POLYGON((%f %f, %f %f, %f %f, %f %f, %f %f))" % \
+    theta = radius / RADIUS_EARTH
+    theta_deg = theta * 180 / math.pi
+
+    min_lat = point.y - theta_deg
+    if min_lat < -90:
+        min_lat = -180 - min_lat
+    
+    max_lat = point.y + theta_deg
+    if max_lat > 90:
+        max_lat = 180 - max_lat
+    
+    
+
+    return fromstr("POLYGON((%f %f, %f %f, %f %f, %f %f, %f %f))" % \
         (min_lon, min_lat, min_lon, max_lat, max_lon, max_lat, max_lon, min_lat, min_lon, min_lat), \
         point.srid)
