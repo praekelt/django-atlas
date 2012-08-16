@@ -1,5 +1,8 @@
 import os
-import simplejson as json
+try:
+    import simplejson as json
+except:
+    import json
 from StringIO import StringIO
 
 from django.contrib.gis.gdal import DataSource
@@ -68,10 +71,11 @@ r_code_pk = {}
 for f_name in region_files:
     f = open(os.path.join(base, f_name))
     sql_region = "INSERT INTO atlas_region (id,name,code,country_id,coordinates) VALUES "
+    fips = f_name.rfind('fips10-4.csv') > -1
     for line in f:
         c_code = line[0:2]
         # use fips codes for everything except US states
-        if c_code != 'US' or (f_name.rfind('us_regions.csv') > -1 and c_code != 'CA'):
+        if (fips and c_code != 'US') or (not fips and c_code == 'US'):
             r_code = line[3:5]
             name = line[6:].rstrip().strip('"')
             key = "%s%s" % (c_code, r_code)
@@ -94,12 +98,11 @@ for line in f:
     if els[0] != 'Country':
         code = els[0].upper()
         city = els[2].decode('iso-8859-1').replace("'","''")
-	city = city.replace('"', '\\"')
         lat = els[5]
         lon = els[6].rstrip()
         sql.write("(%d,'%s'," % (pk, city))
         if len(lat) > 0 and len(lon) > 0:
-            sql.write("GeometryFromText('%s',4326)," % ("POINT(%s %s)" % (lon, lat)))
+            sql.write("GeometryFromText('POINT(%s %s)',4326)," % (lon, lat))
         else:
             sql.write("null,")
         key = "%s%s" % (code, els[3])
@@ -120,6 +123,6 @@ for line in f:
         print("%d / 3173958" % pk)
 f.close()
 
-f = open(os.path.join(base, "datasets/data.sql"), 'w')
+f = open(os.path.join(base, "data.sql"), 'w')
 f.write(sql.getvalue().encode('utf8'))
 f.close()
