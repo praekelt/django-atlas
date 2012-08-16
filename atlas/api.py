@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404
 from tastypie.resources import ModelResource, ALL, ALL_WITH_RELATIONS
 from tastypie import fields
 
-from atlas.models import Country, City, Location
+from atlas.models import Country, Region, City, Location
 
 
 class CountryResource(ModelResource):
@@ -24,8 +24,23 @@ class CountryResource(ModelResource):
         }
 
 
+class RegionResource(ModelResource):
+    country = fields.ForeignKey(CountryResource, "country")
+    
+    class Meta:
+        queryset = Region.objects.all()
+        resource_name = "region"
+        allowed_methods = ["get"]
+        filtering = {
+            'id': ('exact', ),
+            'code': ('exact', ),
+            'country': ALL_WITH_RELATIONS,
+        }
+
+
 class CityResource(ModelResource):
     country = fields.ForeignKey(CountryResource, "country")
+    region = fields.ForeignKey(RegionResource, "region")
     
     class Meta:
         queryset = City.objects.all()
@@ -34,6 +49,7 @@ class CityResource(ModelResource):
         filtering = {
             'id': ('exact', ),
             'country': ALL_WITH_RELATIONS,
+            'region': ALL_WITH_RELATIONS,
         }
 
 
