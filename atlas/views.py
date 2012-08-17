@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
 from django.utils.translation import ugettext as _
 from django.contrib.gis.geos import fromstr
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, resolve
 from django.template import RequestContext
 
 from atlas.models import Location
@@ -43,7 +43,9 @@ def location_required(override_old=False):
                     request.session['location'] = {'city': city, 'position': position}
                     return func(request, *args, **kwargs)
 
-                return HttpResponseRedirect(reverse('select-location'))
+                origin = getattr(resolve(request.get_full_path()), 'url_name', None)
+                return HttpResponseRedirect("%s%s" % (reverse('select-location'), \
+                    ('?view=%s' % origin) if origin else ''))
 
         return wraps(func)(inner_decorator)
 
@@ -57,9 +59,17 @@ def set_location(request):
 
 def select_location(request):
     if request.method == 'POST':
-        pass
+        form = SelectLocationForm(request.POST, request=request)
+        if form.is_valid():
+            form.save()
+            redirect_to = form.cleaned_data['origin']
+            if redirect_to != '/':
+                redirect_to = reverse(redirect_to)
+            return HttpResponseRedirect(redirect_to)
+        
     else:
         form = SelectLocationForm(request=request)
         extra = {'form': form}
-        return render_to_response("atlas/select_location.html", extra, context_instance=RequestContext(request))
+    
+    return render_to_response("atlas/select_location.html", extra, context_instance=RequestContext(request))
     

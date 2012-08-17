@@ -45,10 +45,17 @@ class LonLatWidget(MultiWidget):
                                         var mapOptions = {
                                             zoom: hasLocation ? 12 : 2,
                                             center: new google.maps.LatLng(lat, lon),
-                                            disableDefaultUI: true,
-                                            mapTypeId: google.maps.MapTypeId.ROADMAP
+                                            mapTypeId: google.maps.MapTypeId.ROADMAP,
+                                            panControl: false,
+                                            zoomControl: true,
+                                            mapTypeControl: false,
+                                            scaleControl: false,
+                                            streetViewControl: false,
+                                            overviewMapControl: false,
                                         }
-                                        var map = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
+                                        var max_width = $(document).width() > 600 ? 600 : $(document).width();
+                                        var map_el = $("#map_canvas").width(max_width).height(max_width)[0];
+                                        var map = new google.maps.Map(map_el, mapOptions);
                                         var marker = new google.maps.Marker({
                                             map: map,
                                             title: 'Selected location'
@@ -80,7 +87,7 @@ class LonLatWidget(MultiWidget):
                                 }
                             </script>''' \
                 % (self.longitude, self.latitude, id1, id2, map_key)
-            map_code += u'''<div id="map_canvas" style="width: 600px; height: 600px"></div>'''
+            map_code += u'''<div id="map_canvas"></div>'''
         return u'''<table><tr><td><label for="%s">Longitude:</label></td><td>%s</td></tr>
                 <tr><td><label for="%s">Latitude:</label></td><td>%s</td></tr></table>%s''' \
             % (id1, rendered_widgets[0], id2, rendered_widgets[1], map_code)
@@ -96,9 +103,9 @@ class CoordinateFormField(fields.GeometryField, forms.MultiValueField):
         defaults.update(kwargs)
         fields.GeometryField.__init__(self, *args, **defaults)
         # remove arguments that MultiValueField won't accept
-        defaults.pop('srid')
-        defaults.pop('null')
-        defaults.pop('geom_type')
+        defaults.pop('srid', None)
+        defaults.pop('null', None)
+        defaults.pop('geom_type', None)
         forms.MultiValueField.__init__(self, *args, **defaults)
 
     def clean(self, value):

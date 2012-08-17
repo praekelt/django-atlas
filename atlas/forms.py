@@ -1,114 +1,42 @@
 from django import forms
-from django.utils.safestring import mark_safe
+from django.contrib.gis.geos import fromstr
 
 from atlas.models import Country, Region, City
+from atlas.fields import LonLatWidget, CoordinateFormField
+from atlas.utils import get_city
 
 class SelectLocationForm(forms.Form):
-    country = forms.ChoiceField(
-        choices= Country.objects.all().values_list('country_code', 'name'),
-        required=True,
+    location = CoordinateFormField(
+        required = True,
+        help_text="Select your location  on the map",
     )
-    region = forms.ChoiceField(
-        choices=(),
-        required=True,
-    )
-    city = forms.ChoiceField(
-        choices=(),
-        required=True,
-    )
+    origin = forms.CharField(widget=forms.HiddenInput)
 
-    def __init__(self, *args, **kwargs):
-        self.request = kwargs.pop('request')
-        super(SelectLocationForm, self).__init__(*args, **kwargs)
-        self.fields['country'].choices = [('', '---------'), ] + self.fields['country'].choices
-        if 'location' in self.request.session:
-            city = self.request.session['location']['city']
-            self.fields['country'].initial = city.country.country_code
-            if city.region:
-                self.fields['region'].choices = Region.objects.filter(country=city.country).values_list('code', 'name')
-                self.fields['region'].initial = city.region.code
-                self.fields['city'].choices = City.objects.filter(region=city.region).values_list('id', 'name')
-            else:
-                self.fields['region'].widgets.attr['disabled'] = True
-                self.fields['city'].choices = City.objects.filter(country=city.country).values_list('id', 'name')
-            self.fields['city'].initial = city.id
-        else:
-            self.fields['region'].widgets.attr['disabled'] = True
-            self.fields['city'].widgest.attr['disabled'] = True
+    required_css_class = 'required'
     
-    def __unicode__(self):
-        html = super(SelectLocationForm, self).__unicode__()
-        html += u'''<script type="text/javascript">
-                    SelectLocationForm = {
-                        onCountrySelected: function(event) {
-                            var regions = $('#id_region').attr("disabled", "disabled").empty();
-                            $('#id_city').attr("disabled", "disabled").empty();
-                            var c_code = $("#id_country").val();
-                            $.ajax({
-                                url: "/atlas-api/v1/region/?format=json&limit=100&country__country_code=" + c_code,
-                                success: function (data) {
-                                    if (data.meta.total_count > 0) {
-                                        $.each(data.objects, function(key, value) {   
-                                            regions.append($("<option></option>")
-                                                .attr("value",value.code)
-                                                .text(value.name)); 
-                                        });
-                                        regions.removeAttr("disabled");
-                                    }
-                                    else {
-                                        SelectLocationForm.onRegionSelected(undefined, true);
-                                    }
-                                },
-                                error: SelectLocationForm.onError,
-                                retries: 0,
-                                max_retries: 5,
-                            });
-                        },
-                        
-                        onRegionSelected: function(event, no_regions) {
-                            $('#id_city').attr("disabled", "disabled").empty();
-                            var c_code = $("#id_country").val();
-                            var cities = $("#id_city");
-                            var on_cities_received = function (data) {
-                                console.log(data);
-                                $.each(data.objects, function(key, value) {   
-                                    cities.append($("<option></option>")
-                                        .attr("value",value.id)
-                                        .text(value.name)); 
-                                });
-                                cities.removeAttr("disabled");
-                            };
-                            settings = {
-                                success: on_cities_received,
-                                error: SelectLocationForm.onError,
-                                retries: 0,
-                                max_retries: 5,
-                            };
-                            if (no_regions) {
-                                settings.url = "/atlas-api/v1/city/?format=json&limit=10000&country__country_code=" + c_code;
-                            }
-                            else {
-                                r_code = $("#id_region").val();
-                                settings.url = "/atlas-api/v1/city/?format=json&limit=10000&region__code=" + r_code + "&country__country_code=" + c_code;
-                                $.ajax(settings);
-                            }
-                        },
-                        
-                        onError: function (jqXHR, textStatus, error) {
-                            if (textStatus == 'timeout') {
-                                this.retries++;
-                                if (this.retries <= this.max_retries) {
-                                    $.ajax(this);
-                                    return;
-                                }
-                                return;
-                            }
-                        },
-                    };
-                    
-                    $(document).ready(function () {
-                        $('#id_country').change(SelectLocationForm.onCountrySelected);
-                        $('#id_region').change(SelectLocationForm.onRegionSelected);
-                    });
-                </script>'''
-        return mark_safe(html)
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        super(SelectLocationForm, self).__init__(*args, **kwargs)
+        self.fields['origin'].initial = self.request.GET.get('view', '/')
+        # set location initial value to either GPS coords or closest city
+        if 'location' in self.request.session:
+            location = self.request.session['location']
+            self.fields['location'].initial = location['position'] \
+                if 'position' in location else location['city'].coordinates
+    
+    def save(self):
+        position = fromstr(self.cleaned_data['location'], srid=4326)
+        if 'REMOTE_ADDR' in self.request.META:
+            city = get_city(ip=self.request.META['REMOTE_ADDR'], position=position)
+        else:
+            city = get_city(position=position)
+        self.request.session['location'] = {'city': city, 'position': position}
+
+    def as_div(self):
+        return self._html_output(
+            normal_row=u'<div class="field"><div %(html_class_attr)s>%(label)s %(errors)s <div class="helptext">%(help_text)s</div> %(field)s</div></div>',
+            error_row=u'%s',
+            row_ender='</div>',
+            help_text_html=u'%s',
+            errors_on_separate_row=False
+        )
