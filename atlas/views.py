@@ -69,7 +69,7 @@ def select_location(request):
         
     else:
         form = SelectLocationForm(request=request)
-        extra = {'form': form}
     
+    extra = {'form': form}
     return render_to_response("atlas/select_location.html", extra, context_instance=RequestContext(request))
     
