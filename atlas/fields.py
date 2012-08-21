@@ -19,13 +19,16 @@ class LonLatWidget(MultiWidget):
 
     def decompress(self, value):
         if value:
-            m = re.match(r'POINT \((?P<lon>[-+]?\d+(\.\d*)?) (?P<lat>[-+]?\d+(\.\d*)?)\)', str(value))
-            return [m.group('lon'), m.group('lat')]
+            if isinstance(value, list) and len(value) == 2:
+                return value
+            else:
+                m = re.match(r'POINT \((?P<lon>[-+]?\d+(\.\d*)?) (?P<lat>[-+]?\d+(\.\d*)?)\)', str(value))
+                return [m.group('lon'), m.group('lat')]
         return [None, None]
     
     def render(self, name, value, attrs=None):
         vals = self.decompress(value)
-        if vals[0] is not None and vals[1] is not None:
+        if vals[0] and vals[1]:
             self.longitude = float(vals[0])
             self.latitude = float(vals[1])
         return super(LonLatWidget, self).render(name, value, attrs)
