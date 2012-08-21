@@ -8,7 +8,7 @@ from atlas.utils import get_city
 class SelectLocationForm(forms.Form):
     location = CoordinateFormField(
         required = True,
-        help_text="Select your location  on the map",
+        help_text="Select your location on the map",
     )
     origin = forms.CharField(widget=forms.HiddenInput)
 
