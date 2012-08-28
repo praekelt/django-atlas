@@ -2,11 +2,14 @@
 {% load i18n %}
 
 {% block content %}
-<form action="{% url select-location %}" method="POST">
-    {% csrf_token %}
-    {{ form.as_div }}
-    <div class="buttons">
-        <input type="submit" value="{% trans "Continue" %}" />
-    </div>
-</form>
+<div class="select-location">
+    <div class="title">{% trans "Select your location" %}</div> 
+    <form action="{% url select-location %}" method="POST">
+        {% csrf_token %}
+        {{ form.as_div }}
+        <div class="buttons">
+            <input type="submit" value="{% trans "Continue" %}" />
+        </div>
+    </form>
+</div>
 {% endblock %}
