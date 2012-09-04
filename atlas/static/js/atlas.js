@@ -1,12 +1,16 @@
 var atlas = {
     
-    getLocation: function () {
+    getLocation: function (successCallback, errorCallback) {
         if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(atlas.setLocation, atlas.onLocationError);
+            navigator.geolocation.getCurrentPosition(successCallback ? successCallback : atlas.setLocation,
+                                                     errorCallback ? errorCallback : atlas.onLocationError);
         }
         else {
             console.log("The client does not support geolocation.");
-            atlas.setLocation();
+            if (errorCallback)
+                errorCallback();
+            else
+                atlas.setLocation();
         }
     },
     
@@ -40,7 +44,7 @@ var atlas = {
         }
         $.ajax(settings);
     },
-    
+
     onLocationError: function (error) {
         // Can do more specific error handling below
         switch(error.code) {
