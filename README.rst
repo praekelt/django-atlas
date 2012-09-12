@@ -59,4 +59,8 @@ You can also add a Google Maps API key setting (see below). This will enable the
 Datasets
 --------
 
+The geo data required by django-atlas can be downloaded at https://github.com/downloads/praekelt/django-atlas/data_postgresql.tbz2 for PostgreSQL or
+https://github.com/downloads/praekelt/django-atlas/data_mysql.tbz2 for MySQL. Extract data.sql and load the data using ``psql -U user -W -d demo_geo < data.sql`` for PostgreSQL, or ``mysql -u user -p -D demo_geo < data.sql``
+for MySQL.
+
 MaxMind's IP geolocation datasets are available at http://www.maxmind.com/download/geoip/database/.
