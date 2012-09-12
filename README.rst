@@ -44,6 +44,12 @@ Follow those instructions and create a spatial database. Then add it to the DATA
         }
     }
 
+Atlas uses MaxMind's IP geolocation library and datasets. The following settings need to be included for this to work:
+::
+    GEOIP_PATH = '.../django-atlas/atlas/datasets/MaxMind/'
+    GEOIP_CITY = 'GeoLiteCity.dat'
+    GEOIP_COUNTRY = 'GeoIPv6.dat'
+
 You can also add a Google Maps API key setting (see below). This will enable the LonLatWidget to use Google Maps for selecting coordinates.
 ::
     DJANGO_ATLAS = {
