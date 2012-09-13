@@ -26,10 +26,10 @@ class SelectLocationForm(forms.Form):
     
     def save(self):
         position = fromstr(self.cleaned_data['location'], srid=4326)
-        if 'REMOTE_ADDR' in self.request.META:
+        '''if 'REMOTE_ADDR' in self.request.META:
             city = get_city(ip=self.request.META['REMOTE_ADDR'], position=position)
-        else:
-            city = get_city(position=position)
+        else:'''
+        city = get_city(position=position)
         self.request.session['location'] = {'city': city, 'position': position}
 
     def as_div(self):

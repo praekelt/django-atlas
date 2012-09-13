@@ -31,12 +31,12 @@ def location_required(override_old=False):
                 position = None
                 if location and location != 'no-location':
                     position = fromstr("POINT (%s %s)" % tuple(location.split('+')), srid=4326)
-                if ip:
-                    if position:
+                if ip and not position:
+                    '''if position:
                         city = get_city(ip=ip, position=position)
-                    else:
-                        city = get_city(ip=ip)
-                if not city and position:
+                    else:'''
+                    city = get_city(ip=ip)
+                elif position:
                     city = get_city(position=position)
                 
                 if city:
