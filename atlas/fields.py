@@ -72,6 +72,10 @@ class LonLatWidget(MultiWidget):
                                             document.getElementById("%s").value = pos.lat();
                                             marker.setPosition(pos);
                                         });
+                                        
+                                        this.marker = marker;
+                                        this.map = map;
+                                        this.geocoder = new google.maps.Geocoder();
                                     },
 
                                     loadScript: function() {
@@ -79,6 +83,27 @@ class LonLatWidget(MultiWidget):
                                         script.type = "text/javascript";
                                         script.src = "http://maps.googleapis.com/maps/api/js?key=%s&sensor=false&callback=LonLatWidget.initialize";
                                         document.body.appendChild(script);
+                                    },
+                                    
+                                    search: function(address) {
+                                        var marker = this.marker;
+                                        var map = this.map;
+                                        this.geocoder.geocode(
+                                            {'address': address}, 
+                                            function(results, status) { 
+                                                if (status == google.maps.GeocoderStatus.OK) { 
+                                                    var pos = results[0].geometry.location;
+                                                    document.getElementById("%s").value = pos.lng();
+                                                    document.getElementById("%s").value = pos.lat();
+                                                    marker.setPosition(pos);
+                                                    map.setCenter(pos);
+                                                    map.setZoom(12);
+                                                } 
+                                                else {
+                                                    alert("Your search returned no results."); 
+                                                } 
+                                            }
+                                        );
                                     }
                                 };
                                 
@@ -89,8 +114,10 @@ class LonLatWidget(MultiWidget):
                                     window.attachEvent('onload', LonLatWidget.loadScript);
                                 }
                             </script>''' \
-                % (self.longitude, self.latitude, id1, id2, map_key)
-            map_code += u'''<div id="map_canvas"></div>'''
+                % (self.longitude, self.latitude, id1, id2, map_key, id1, id2)
+            map_code += u'''<div><div style="margin: 16px 0px 8px 0px;"><input style="vertical-align: middle; width: 30em;" type="text" id="search_address" value=""/>
+            <input type="submit" style="vertical-align: middle;" onclick="LonLatWidget.search(document.getElementById('search_address').value); return false;" value="Search"/></div>
+            <div id="map_canvas"></div></div>'''
         return u'''<table><tr><td><label for="%s">Longitude:</label></td><td>%s</td></tr>
                 <tr><td><label for="%s">Latitude:</label></td><td>%s</td></tr></table>%s''' \
             % (id1, rendered_widgets[0], id2, rendered_widgets[1], map_code)
