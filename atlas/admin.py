@@ -54,11 +54,15 @@ class LocationAdminForm(forms.ModelForm):
         return (True, "")
 
 
-class LocationAdmin(admin.ModelAdmin):
+class SearchByNameAdmin(admin.ModelAdmin):
+    search_fields = ['name']
+
+
+class LocationAdmin(SearchByNameAdmin):
     form = LocationAdminForm
 
 
 admin.site.register(Location, LocationAdmin)
-admin.site.register(City)
-admin.site.register(Country)
-admin.site.register(Region)
+admin.site.register(City, SearchByNameAdmin)
+admin.site.register(Country, SearchByNameAdmin)
+admin.site.register(Region, SearchByNameAdmin)
