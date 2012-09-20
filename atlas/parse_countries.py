@@ -111,7 +111,7 @@ for line in f:
         else:
             sql.write("null,")
         sql.write("%d)" % (code_geom[code]["pk"], ))
-        if pk != 3173958 and counter < 100000:
+        if pk != 3173958 and counter < 1000:
             sql.write(",")
         else:
             sql.write(";")

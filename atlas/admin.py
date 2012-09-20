@@ -12,34 +12,34 @@ class LocationAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(LocationAdminForm, self).__init__(*args, **kwargs)
         self.fields['country'].required = False
-        self.fields['city'].required = False
+        #self.fields['city'].required = False
 
     def clean(self, *args, **kwargs):
         cd = super(LocationAdminForm, self).clean(*args, **kwargs)
-        if cd['city'] == 'no_city':
-            del cd['city']
+        '''if cd['city'] == 'no_city':
+            del cd['city']'''
 
         # fill in the blanks on the form, if possible
-        if cd.get('coordinates', None) and not cd.get('city', None):
-            cd['city'] = get_city(position=cd['coordinates'])
-        if cd.get('city', None):
-            if not cd.get('country', None):
-                cd['country'] = cd['city'].country
-        else:
+        '''if cd.get('coordinates', None) and not cd.get('city', None):
+            cd['city'] = get_city(position=cd['coordinates'])'''
+        # if cd.get('city', None):
+        if not cd.get('country', None) or cd['country'] != cd['city'].country:
+            cd['country'] = cd['city'].country
+        '''else:
             self.errors.clear()
-            raise forms.ValidationError("A city or coordinates are required.")
+            raise forms.ValidationError("A city or coordinates are required.")'''
 
         # check that fields are consistent
-        success, msg = self.check_consistency(cd)
+        '''success, msg = self.check_consistency(cd)
         if not success:
-            raise forms.ValidationError(msg)
+            raise forms.ValidationError(msg)'''
 
         return cd
 
-    def clean_city(self):
+    '''def clean_city(self):
         if self.cleaned_data.get('city', None):
             return self.cleaned_data['city']
-        return 'no_city'
+        return 'no_city'''
 
     # checks that fields are geographically consistent
     def check_consistency(self, cleaned_data):
