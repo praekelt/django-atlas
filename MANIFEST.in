@@ -1,0 +1,8 @@
+include AUTHORS.rst
+include LICENSE
+include README.rst
+recursive-include atlas/migrations *
+recursive-include atlas/templates *
+recursive-include atlas/static *
+global-exclude *.pyc *~
+exclude atlas/data.tbz2
