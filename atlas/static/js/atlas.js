@@ -16,25 +16,6 @@ var atlas = {
     
     // can call this with or without a location - the server will IP geolocate the client
     setLocation: function (location) {
-        settings = {
-            url: "/set-location/",
-            error: function (jqXHR, textStatus, error) {
-                if (textStatus == 'timeout') {
-                    this.retries++;
-                    if (this.retries <= this.max_retries) {
-                        $.ajax(this);
-                        return;
-                    }
-                    console.log("The max retry limit has been reached.");
-                    return;
-                }
-                else {
-                    console.log("Some error occurred.");
-                }
-            },
-            retries: 0,
-            max_retries: 5,
-        };
         if (location) {
             document.cookie = "atlas_id=" + location.coords.longitude + "+" + location.coords.latitude + "; path=/";
             console.log("The client has been located.");
@@ -42,7 +23,22 @@ var atlas = {
         else {
             document.cookie = "atlas_id=no-location; path=/";
         }
-        $.ajax(settings);
+        var retries = 0;
+        var max_retries = 5;
+        var errback = function (req) {
+            if (req.status == 408) {
+                retries++;
+                if (retries <= max_retries) {
+                    atlas.sendRequest('/set-location/', function(req){}, errback);
+                    return;
+                }
+                console.log("The max retry limit has been reached.");
+            }
+            else {
+                console.log("Some error occurred.");
+            }
+        };
+        atlas.sendRequest('/set-location/', function(req){}, errback);           
     },
 
     onLocationError: function (error) {
@@ -66,6 +62,47 @@ var atlas = {
     
     isLocationSet: function() {
         return document.cookie.indexOf("atlas_id") > -1
+    },
+    
+    XMLHttpFactories: [
+        function () {return new XMLHttpRequest()},
+        function () {return new ActiveXObject("Msxml2.XMLHTTP")},
+        function () {return new ActiveXObject("Msxml3.XMLHTTP")},
+        function () {return new ActiveXObject("Microsoft.XMLHTTP")}
+    ],
+
+    sendRequest: function(url, callback, errback, postData) {
+        var req = createXMLHTTPObject();
+        if (!req) return;
+        var method = (postData) ? "POST" : "GET";
+        req.open(method,url,true);
+        req.setRequestHeader('User-Agent','XMLHTTP/1.0');
+        if (postData)
+            req.setRequestHeader('Content-type','application/x-www-form-urlencoded');
+        req.onreadystatechange = function () {
+            if (req.readyState != 4) return;
+            if (req.status != 200 && req.status != 304) {
+                errback(req);
+                return;
+            }
+            callback(req);
+        }
+        if (req.readyState == 4) return;
+        req.send(postData);
+    },
+
+    createXMLHTTPObject: function() {
+        var xmlhttp = false;
+        for (var i=0;i<atlas.XMLHttpFactories.length;i++) {
+            try {
+                xmlhttp = atlas.XMLHttpFactories[i]();
+            }
+            catch (e) {
+                continue;
+            }
+            break;
+        }
+        return xmlhttp;
     },
 
 }
