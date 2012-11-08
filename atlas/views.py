@@ -17,7 +17,7 @@ This decorator tries to geolocate the client and adds the location
 to the session data. If the client cannot be geolocated it redirects
 to a 'select-location' page.
 '''
-def location_required(override_old=False):
+def location_required(func=None, override_old=False):
     def decorator(func):
         def inner_decorator(request, *args, **kwargs):
             if 'location' in request.session and not override_old:
@@ -49,6 +49,8 @@ def location_required(override_old=False):
 
         return wraps(func)(inner_decorator)
 
+    if func:
+        return decorator(func)
     return decorator
 
 
