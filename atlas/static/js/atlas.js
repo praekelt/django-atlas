@@ -72,7 +72,7 @@ var atlas = {
     ],
 
     sendRequest: function(url, callback, errback, postData) {
-        var req = createXMLHTTPObject();
+        var req = atlas.createXMLHTTPObject();
         if (!req) return;
         var method = (postData) ? "POST" : "GET";
         req.open(method,url,true);
