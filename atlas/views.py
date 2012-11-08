@@ -17,7 +17,7 @@ This decorator tries to geolocate the client and adds the location
 to the session data. If the client cannot be geolocated it redirects
 to a 'select-location' page.
 '''
-def location_required(override_old=False):
+def location_required(func=None, override_old=False):
     def decorator(func):
         def inner_decorator(request, *args, **kwargs):
             if 'location' in request.session and not override_old:
@@ -49,6 +49,8 @@ def location_required(override_old=False):
 
         return wraps(func)(inner_decorator)
 
+    if func:
+        return decorator(func)
     return decorator
 
 
@@ -57,9 +59,9 @@ def set_location(request):
     return HttpResponse(str(request.session['location']['city']))
 
 
-def select_location(request):
+def select_location(request, form_class=SelectLocationForm):
     if request.method == 'POST':
-        form = SelectLocationForm(request.POST, request=request)
+        form = form_class(request.POST, request=request)
         if form.is_valid():
             form.save()
             redirect_to = form.cleaned_data['origin']
@@ -68,7 +70,7 @@ def select_location(request):
             return HttpResponseRedirect(redirect_to)
         
     else:
-        form = SelectLocationForm(request=request)
+        form = form_class(request=request)
     
     extra = {'form': form}
     return render_to_response("atlas/select_location.html", extra, context_instance=RequestContext(request))
