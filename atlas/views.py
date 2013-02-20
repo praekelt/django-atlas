@@ -7,6 +7,7 @@ from django.utils.translation import ugettext as _
 from django.contrib.gis.geos import fromstr
 from django.core.urlresolvers import reverse, resolve
 from django.template import RequestContext
+from django.views.decorators.csrf import csrf_exempt
 
 from atlas.models import Location
 from atlas.utils import get_city
@@ -55,6 +56,7 @@ def location_required(func=None, override_old=False):
 
 
 @location_required(override_old=True)
+@csrf_exempt
 def set_location(request):
     return HttpResponse(str(request.session['location']['city']))
 

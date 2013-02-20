@@ -38,7 +38,7 @@ var atlas = {
                 console.log("Some error occurred.");
             }
         };
-        atlas.sendRequest('/set-location/', function(req){}, errback);           
+        atlas.sendRequest('/set-location/', function(req){}, errback, 'POST');           
     },
 
     onLocationError: function (error) {
@@ -71,12 +71,11 @@ var atlas = {
         function () {return new ActiveXObject("Microsoft.XMLHTTP")}
     ],
 
-    sendRequest: function(url, callback, errback, postData) {
+    sendRequest: function(url, callback, errback, method, postData) {
         var req = atlas.createXMLHTTPObject();
         if (!req) return;
-        var method = (postData) ? "POST" : "GET";
+        if (!method) method = (postData) ? "POST" : "GET";
         req.open(method,url,true);
-        req.setRequestHeader('User-Agent','XMLHTTP/1.0');
         if (postData)
             req.setRequestHeader('Content-type','application/x-www-form-urlencoded');
         req.onreadystatechange = function () {
