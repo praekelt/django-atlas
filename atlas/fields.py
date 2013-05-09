@@ -81,7 +81,7 @@ class LonLatWidget(MultiWidget):
                                     loadScript: function() {
                                         var script = document.createElement("script");
                                         script.type = "text/javascript";
-                                        script.src = "http://maps.googleapis.com/maps/api/js?key=%s&sensor=false&callback=LonLatWidget.initialize";
+                                        script.src = "//maps.googleapis.com/maps/api/js?key=%s&sensor=false&callback=LonLatWidget.initialize";
                                         document.body.appendChild(script);
                                     },
                                     
