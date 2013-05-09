@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='django-atlas',
-    version='0.0.3-beta',
+    version='0.0.4-beta',
     description='Geolocation models, data and tools using GeoDjango',
     long_description = open('README.rst', 'r').read() + open('AUTHORS.rst', 'r').read(),
     author='Praekelt Foundation',

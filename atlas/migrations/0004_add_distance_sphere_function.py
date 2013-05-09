@@ -18,7 +18,7 @@ class Migration(SchemaMigration):
                             RETURNS double DETERMINISTIC
                             RETURN 6378100 * 2 * ASIN(SQRT( POWER(SIN((y(a) - y(b)) *
                             pi()/180 / 2), 2) +COS(y(a) * pi()/180) * COS(y(b) *
-                            pi()/180) * POWER(SIN((x(a) - x(b)) * pi()/180 / 2), 2)));""")
+                            pi()/180) * POWER(SIN((x(a) - x(b)) * pi()/180 / 2), 2)))""")
 
     def backwards(self, orm):
         db_engine = settings.DATABASES['default']['ENGINE']
