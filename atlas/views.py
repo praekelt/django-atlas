@@ -1,52 +1,33 @@
 from functools import wraps
 
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import get_object_or_404, render_to_response
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseBadRequest
+from django.shortcuts import render_to_response
 from django.template import RequestContext
-from django.utils.translation import ugettext as _
-from django.contrib.gis.geos import fromstr
 from django.core.urlresolvers import reverse, resolve
-from django.template import RequestContext
 from django.views.decorators.csrf import csrf_exempt
 
-from atlas.models import Location
-from atlas.utils import get_city
+from atlas.utils import locate
 from atlas.forms import SelectLocationForm
 
-'''
-This decorator tries to geolocate the client and adds the location
-to the session data. If the client cannot be geolocated it redirects
-to a 'select-location' page.
-'''
+
 def location_required(func=None, override_old=False):
+    '''
+    This decorator tries to geolocate the client and adds the location
+    to the session data. If the client cannot be geolocated it redirects
+    to a 'select-location' page.
+    '''
     def decorator(func):
         def inner_decorator(request, *args, **kwargs):
             if 'location' in request.session and not override_old:
                 return func(request, *args, **kwargs)
             else:
-                ip = request.META['REMOTE_ADDR'] if 'REMOTE_ADDR' \
-                    in request.META else None
-                location = request.COOKIES['atlas_id'] if 'atlas_id' \
-                    in request.COOKIES else None
-                city = None
-                position = None
-                if location and location != 'no-location':
-                    position = fromstr("POINT (%s %s)" % tuple(location.split('+')), srid=4326)
-                if ip and not position:
-                    '''if position:
-                        city = get_city(ip=ip, position=position)
-                    else:'''
-                    city = get_city(ip=ip)
-                elif position:
-                    city = get_city(position=position)
-                
-                if city:
-                    request.session['location'] = {'city': city, 'position': position}
+                locate(request)
+                if 'location' in request.session:
                     return func(request, *args, **kwargs)
 
                 origin = getattr(resolve(request.get_full_path()), 'url_name', None)
-                return HttpResponseRedirect("%s%s" % (reverse('select-location'), \
-                    ('?view=%s' % origin) if origin else ''))
+                return HttpResponseRedirect("%s%s" % (reverse('select-location'),
+                                            ('?view=%s' % origin) if origin else ''))
 
         return wraps(func)(inner_decorator)
 
@@ -55,10 +36,25 @@ def location_required(func=None, override_old=False):
     return decorator
 
 
-@location_required(override_old=True)
 @csrf_exempt
 def set_location(request):
-    return HttpResponse(str(request.session['location']['city']))
+    # force the location to be overridden
+    if 'location' in request.session:
+        del request.session['location']
+    locate(request)
+
+    if 'location' in request.session:
+        return HttpResponse(str(request.session['location']['city']))
+    if 'REMOTE_ADDR' in request.META:
+        if 'atlas_id' in request.COOKIES:
+            return HttpResponseBadRequest('Client cannot be located using IP %s and location %s' %
+                                          (request.META['REMOTE_ADDR'], request.COOKIES['atlas_id']))
+        return HttpResponseBadRequest('Client cannot be located using IP %s' %
+                                      request.META['REMOTE_ADDR'])
+    elif 'atlas_id' in request.COOKIES:
+        return HttpResponseBadRequest('Client cannot be located using location %s' %
+                                      request.COOKIES['atlas_id'])
+    return HttpResponseBadRequest('Client cannot be located without IP or location cookie')
 
 
 def select_location(request, form_class=SelectLocationForm):
@@ -70,10 +66,9 @@ def select_location(request, form_class=SelectLocationForm):
             if redirect_to != '/':
                 redirect_to = reverse(redirect_to)
             return HttpResponseRedirect(redirect_to)
-        
+
     else:
         form = form_class(request=request)
-    
+
     extra = {'form': form}
     return render_to_response("atlas/select_location.html", extra, context_instance=RequestContext(request))
-    
