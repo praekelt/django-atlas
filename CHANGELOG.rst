@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.0.4-beta (09-05-2013)
+-----------------------
+#. Better error messages if locating the request fails on /set-location/.
+#. Use http/https depending on current connection to get Google Maps javascript.
+
 0.0.3-beta (20-02-2013)
 -----------------------
 #. Ajax POST to `/set-location/` rather than GET. Better semantics and it avoids browser caching issue.
