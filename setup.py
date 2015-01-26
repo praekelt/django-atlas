@@ -12,7 +12,7 @@ setup(
     packages = find_packages(),
     install_requires = [
         'django-tastypie>=0.10,<0.12',  # 0.12 requires Django 1.7
-        'django-photologue>=3.1',
+        'django-photologue',
         'django-category',
     ],
     include_package_data=True,
