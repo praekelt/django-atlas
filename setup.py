@@ -11,7 +11,7 @@ setup(
     url='http://github.com/Rizziepit/django-atlas',
     packages = find_packages(),
     install_requires = [
-        'django-tastypie<0.10',
+        'django-tastypie>=0.10,<0.12',  # 0.12 requires Django 1.7
         'django-photologue',
         'django-category',
     ],
