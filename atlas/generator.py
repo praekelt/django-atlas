@@ -10,7 +10,10 @@ The probability of locations is higher towards the center of the city, tapering 
 '''
 def generate():
     # select Cape Town, Stellenbosch, Worcester and Johannesburg
-    country_id = Country.objects.get(country_code='ZA').id
+    try:
+        country_id = Country.objects.get(country_code='ZA').id
+    except Country.DoesNotExist:
+        return []
     cities = City.objects.filter(country=country_id, \
         name__in=('Cape Town', 'Stellenbosch', 'Worcester', 'Johannesburg')).exclude( \
         region__name='Limpopo').values_list('id', 'name', 'coordinates')
@@ -39,5 +42,5 @@ def generate():
                     "city": {"model": "atlas.City", "fields": {"id": int(city[0])}},
                     "coordinates": "POINT(%f %f)" % (x_new, y_new),
                 },
-            })       
+            })
     return objects

@@ -10,20 +10,16 @@ setup(
     license='BSD',
     url='http://github.com/Rizziepit/django-atlas',
     packages = find_packages(),
-    dependency_links = [
-        'http://github.com/praekelt/django-photologue/tarball/2.6.praekelt#egg=django-photologue-2.6.praekelt',
-        'http://github.com/praekelt/django-photologue/tarball/2.7.praekelt#egg=django-photologue-2.7.praekelt',
-    ],
     install_requires = [
-        'django-tastypie',
+        'django-tastypie>=0.10,<0.12',  # 0.12 requires Django 1.7
         'django-photologue',
         'django-category',
     ],
     include_package_data=True,
     tests_require=[
-        'django-setuptest',
+        'django-setuptest>=0.1.4',
     ],
-    test_suite="setuptest.SetupTestSuite",
+    test_suite="setuptest.setuptest.SetupTestSuite",
     classifiers=[
         "Programming Language :: Python",
         "License :: OSI Approved :: BSD License",
