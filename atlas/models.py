@@ -11,7 +11,7 @@ from atlas.fields import CoordinateField
 
 class Country(models.Model):
     objects = models.GeoManager()
-    
+
     name = models.CharField(max_length=50)
     country_code = models.CharField(
         max_length=2,
@@ -38,11 +38,11 @@ class Country(models.Model):
 
     def __unicode__(self):
         return self.name
-        
+
 
 class Region(models.Model):
     objects = models.GeoManager()
-    
+
     name = models.CharField(max_length=128)
     # uses fips10-4 2-digit region codes and US/CA codes
     code = models.CharField(
@@ -63,7 +63,7 @@ class Region(models.Model):
         blank=True
     )
     country = models.ForeignKey(Country)
-    
+
     class Meta:
         ordering = ('name',)
         unique_together = ('country', 'code',)
@@ -74,7 +74,7 @@ class Region(models.Model):
 
 class City(models.Model):
     objects = models.GeoManager()
-    
+
     name = models.CharField(
         max_length=128,
         db_index=True
@@ -91,11 +91,11 @@ class City(models.Model):
         blank=True
     )
     country = models.ForeignKey(Country)
-    
+
     class Meta:
         verbose_name_plural = 'Cities'
         ordering = ('name',)
-    
+
     def __unicode__(self):
         if self.region is not None:
             return "%s - %s (%s)" % (self.name, self.region.name, self.country.country_code)
@@ -104,7 +104,7 @@ class City(models.Model):
 
 class Location(models.Model):
     objects = models.GeoManager()
-    
+
     name = models.CharField(
         max_length=128,
         db_index=True
