@@ -11,13 +11,15 @@ setup(
     url='http://github.com/Rizziepit/django-atlas',
     packages = find_packages(),
     install_requires = [
+        'django<1.7',
         'django-tastypie>=0.10,<0.12',  # 0.12 requires Django 1.7
-        'django-photologue',
+        'django-photologue>=3.1',
         'django-category',
     ],
     include_package_data=True,
     tests_require=[
         'django-setuptest>=0.1.4',
+        'psycopg2',
     ],
     test_suite="setuptest.setuptest.SetupTestSuite",
     classifiers=[
