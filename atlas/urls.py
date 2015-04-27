@@ -1,8 +1,9 @@
-from django.conf.urls.defaults import patterns, url, include
+from django.conf.urls import patterns, url, include
 
 from tastypie.api import Api
 
 from atlas.api import CountryResource, RegionResource, CityResource
+from atlas import views
 
 
 v1_api = Api(api_name='v1')
@@ -18,11 +19,11 @@ urlpatterns = patterns('',
     ),
     url(
         r'^set-location/$',
-        'atlas.views.set_location',
+        views.set_location,
         name='set-location'
     ),
     url(r'^select-location/$',
-        'atlas.views.select_location',
+        views.select_location,
         name='select-location',
     ),
 )
