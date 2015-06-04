@@ -8,15 +8,11 @@ setup(
     author='Praekelt Foundation',
     author_email='dev@praekelt.com',
     license='BSD',
-    url='http://github.com/Rizziepit/django-atlas',
+    url='http://github.com/praekelt/django-atlas',
     packages = find_packages(),
-    dependency_links = [
-        'http://github.com/praekelt/django-photologue/tarball/2.6.praekelt#egg=django-photologue-2.6.praekelt',
-        'http://github.com/praekelt/django-photologue/tarball/2.7.praekelt#egg=django-photologue-2.7.praekelt',
-    ],
     install_requires = [
         'django-tastypie',
-        'django-photologue',
+        'django-photologue-praekelt',
         'django-category',
     ],
     include_package_data=True,

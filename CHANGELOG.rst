@@ -1,6 +1,10 @@
 Changelog
 =========
 
+next
+----
+#. Use renamed django-photologue-praekelt.
+
 0.0.4-beta (09-05-2013)
 -----------------------
 #. Better error messages if locating the request fails on /set-location/.
