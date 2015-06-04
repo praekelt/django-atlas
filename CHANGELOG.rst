@@ -1,8 +1,8 @@
 Changelog
 =========
 
-next
-----
+0.0.5
+-----
 #. Use renamed django-photologue-praekelt.
 
 0.0.4-beta (09-05-2013)
